@@ -1,0 +1,295 @@
+/discovers:
+[
+    {
+        "boardID": "0x11013400",
+        "boardNumber": "0",
+        "boardType": "Dante-12GAM",
+        "description": "AJA Device",
+        "deviceName": "Dante-12GAM",
+        "hostName": "CMTE-KIT1-SDI-EMBED",
+        "ipAddress": "172.20.146.171",
+        "port": 80,
+        "serviceDescription": "Dante-12GAM",
+        "serviceDomain": "local",
+        "serviceType": "_http._tcp"
+    }
+]
+
+/buildInfo:
+{
+    "buildType": "Release",
+    "date": "2025-05-16",
+    "qtVersion": "5.15.4",
+    "repoident": "e892ae9b3be8ef66885535461114182bf292c1a7",
+    "serverVersion": "1.0.0",
+    "time": "05:04:21"
+}
+
+/status:
+{
+    "licenseActive": false,
+    "serialNumber": "1D100288",
+    "systemDate": "Tue Nov 8 2022",
+    "systemTime": "18:08:52"
+}
+
+/system/config:
+
+{
+    "authenticationEnable": false,
+    "checkLicenseRequest": false,
+    "domainName": "",
+    "factoryPreset": false,
+    "factoryReset": false,
+    "hostName": "CMTE-KIT1-SDI-EMBED",
+    "identify": false,
+    "reboot": false,
+    "shutdown": false,
+    "ssdpEnable": true,
+    "systemOrganizationName": "",
+    "updateRequest": false
+}
+
+/sdi/control:
+{
+    "channels_11_12": "Pass",
+    "channels_13_14": "Pass",
+    "channels_15_16": "Pass",
+    "channels_1_2": "Embed",
+    "channels_3_4": "Pass",
+    "channels_5_6": "Pass",
+    "channels_7_8": "Pass",
+    "channels_9_10": "Pass",
+    "enableInternalSignalGenerator": false,
+    "hancData": "Pass",
+    "levelB": "Stream A",
+    "testPattern": "Black",
+    "videoFormat": "720p50"
+}
+
+/sfp/control:
+{
+    "channels_11_12": "Pass",
+    "channels_13_14": "Pass",
+    "channels_15_16": "Pass",
+    "channels_1_2": "Pass",
+    "channels_3_4": "Pass",
+    "channels_5_6": "Pass",
+    "channels_7_8": "Pass",
+    "channels_9_10": "Pass",
+    "enableInternalSignalGenerator": false,
+    "hancData": "Pass",
+    "levelB": "Stream A",
+    "testPattern": "Black",
+    "testTone": "1kHz",
+    "videoFormat": "720p50"
+}
+
+/system/status:
+{
+    "mainbootVersion": "1.0.0.4",
+    "runningVersion": "1.0.0.4",
+    "safeboot": false,
+    "safebootVersion": "1.0.0.4d"
+}
+
+/alarm:
+
+[]
+
+/sdi/status:
+{
+    "inputAudio": {
+        "embeddedGroup1": false,
+        "embeddedGroup2": false,
+        "embeddedGroup3": false,
+        "embeddedGroup4": false
+    },
+    "inputLevelB": "",
+    "inputLocked": false,
+    "inputVideo": {
+        "bitDepth": "",
+        "colorimetry": "",
+        "colorspace": "",
+        "dataRate": "",
+        "eotf": "",
+        "format": ""
+    },
+    "outputAudio": {
+        "embeddedGroup1": true,
+        "embeddedGroup2": false,
+        "embeddedGroup3": false,
+        "embeddedGroup4": false
+    },
+    "outputTSGEnabled": false,
+    "outputVideo": {
+        "bitDepth": "",
+        "colorimetry": "",
+        "colorspace": "",
+        "dataRate": "",
+        "eotf": "",
+        "format": ""
+    }
+}
+
+/sfp/status:
+
+{
+    "inputAudio": {
+        "embeddedGroup1": false,
+        "embeddedGroup2": false,
+        "embeddedGroup3": false,
+        "embeddedGroup4": false
+    },
+    "inputLevelB": "",
+    "inputLocked": false,
+    "inputVideo": {
+        "bitDepth": "",
+        "colorimetry": "",
+        "colorspace": "",
+        "dataRate": "",
+        "eotf": "",
+        "format": ""
+    },
+    "outputAudio": {
+        "embeddedGroup1": false,
+        "embeddedGroup2": false,
+        "embeddedGroup3": false,
+        "embeddedGroup4": false
+    },
+    "outputTSGEnabled": false,
+    "outputVideo": {
+        "bitDepth": "",
+        "colorimetry": "",
+        "colorspace": "",
+        "dataRate": "",
+        "eotf": "",
+        "format": ""
+    }
+}
+
+/dante/status:
+
+{
+    "channels_17_24": "",
+    "channels_1_8": "1, 2, 3, 4",
+    "channels_25_32": "",
+    "channels_9_16": ""
+}
+
+/net/devices:
+
+[
+    {
+        "activeParams": {
+            "address": "172.20.146.171",
+            "dnsSearch": "",
+            "dnsServer1": "172.20.150.31",
+            "dnsServer2": "172.20.150.43",
+            "gateway": "172.20.146.250",
+            "speed": "",
+            "subnet": "255.255.255.0"
+        },
+        "config": {
+            "enable": true,
+            "ipChangeCommit": 11,
+            "ipConfig": "Static",
+            "pingAddress": "",
+            "pingEnable": false,
+            "resetBadPacketCount": false
+        },
+        "stagedParams": {
+            "address": "172.20.146.171",
+            "dnsSearch": "",
+            "dnsServer1": "172.20.150.31",
+            "dnsServer2": "172.20.150.43",
+            "gateway": "172.20.146.250",
+            "speed": "",
+            "subnet": "255.255.255.0"
+        },
+        "status": {
+            "connected": true,
+            "dhcpState": "Bound",
+            "interfaceSetupState": "Uninitialized",
+            "ipAddressOffered": "10.4.240.29",
+            "linkErrors": 0,
+            "linkState": "1000MBit Full-Duplex",
+            "lldpChassisId": "",
+            "lldpName": "",
+            "lldpPortId": "",
+            "mac": "00:0C:17:62:7D:98",
+            "name": "eth0",
+            "pingOutput": ""
+        }
+    },
+    {
+        "activeParams": {
+            "address": "172.31.213.24",
+            "dnsSearch": "",
+            "dnsServer1": "",
+            "dnsServer2": "",
+            "gateway": "",
+            "speed": "25G",
+            "subnet": "255.255.0.0"
+        },
+        "config": {
+            "enable": true,
+            "ipChangeCommit": 2,
+            "ipConfig": "DHCP",
+            "pingAddress": "",
+            "pingEnable": false,
+            "resetBadPacketCount": false
+        },
+        "stagedParams": {
+            "address": "192.168.1.3",
+            "dnsSearch": "",
+            "dnsServer1": "",
+            "dnsServer2": "",
+            "gateway": "192.168.1.1",
+            "speed": "25G",
+            "subnet": "255.255.255.0"
+        },
+        "status": {
+            "connected": false,
+            "dhcpState": "Discover",
+            "interfaceSetupState": "Uninitialized",
+            "ipAddressOffered": "",
+            "linkErrors": 0,
+            "linkState": "Disconnected",
+            "lldpChassisId": "",
+            "lldpName": "",
+            "lldpPortId": "",
+            "mac": "00:0C:17:62:7D:99",
+            "name": "eth1",
+            "pingOutput": ""
+        }
+    }
+]
+
+/environment/status:
+
+{
+    "dieTemp": "64.26 ℃",
+    "externalPowerPresent": false,
+    "fanSpeed1": 1689,
+    "fanSpeed2": 1510,
+    "poePresent": true,
+    "poeT2p": true
+}
+
+/system/config:
+
+{
+    "authenticationEnable": false,
+    "checkLicenseRequest": false,
+    "domainName": "",
+    "factoryPreset": false,
+    "factoryReset": false,
+    "hostName": "CMTE-KIT1-SDI-EMBED",
+    "identify": false,
+    "reboot": false,
+    "shutdown": false,
+    "ssdpEnable": true,
+    "systemOrganizationName": "",
+    "updateRequest": false
+}

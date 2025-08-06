@@ -1,6 +1,6 @@
-import type { ModuleInstance } from './main.js'
+import type { AjaDante12GAM } from './main.js'
 
-export function UpdateActions(self: ModuleInstance): void {
+export function UpdateActions(self: AjaDante12GAM): void {
 	self.setActionDefinitions({
 		sample_action: {
 			name: 'My First Action',

@@ -1,7 +1,7 @@
 import { combineRgb } from '@companion-module/base'
-import type { ModuleInstance } from './main.js'
+import type { AjaDante12GAM } from './main.js'
 
-export function UpdateFeedbacks(self: ModuleInstance): void {
+export function UpdateFeedbacks(self: AjaDante12GAM): void {
 	self.setFeedbackDefinitions({
 		ChannelState: {
 			name: 'Example Feedback',

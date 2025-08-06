@@ -1,5 +1,5 @@
 {
-	"name": "your-module-name",
+	"name": "aja-dante12gam",
 	"version": "0.1.0",
 	"main": "dist/main.js",
 	"type": "module",
@@ -16,25 +16,30 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/bitfocus/companion-module-your-module-name.git"
+		"url": "git+https://github.com/phillipivan/companion-module-aja-dante12gam.git"
 	},
 	"engines": {
-		"node": "^22.14",
+		"node": "^22.17",
 		"yarn": "^4"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.11.3"
+		"@companion-module/base": "~1.12.1",
+		"axios": "^1.11.0",
+		"lodash": "^4.17.21",
+		"p-queue": "^8.1.0",
+		"zod": "^4.0.15"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^2.3.0",
-		"@types/node": "^22.14.1",
-		"eslint": "^9.24.0",
+		"@types/lodash": "^4",
+		"@types/node": "^22.17.0",
+		"eslint": "^9.32.0",
 		"husky": "^9.1.7",
-		"lint-staged": "^15.5.1",
-		"prettier": "^3.5.3",
+		"lint-staged": "^16.1.4",
+		"prettier": "^3.6.2",
 		"rimraf": "^6.0.1",
 		"typescript": "~5.8.3",
-		"typescript-eslint": "^8.30.1"
+		"typescript-eslint": "^8.39.0"
 	},
 	"prettier": "@companion-module/tools/.prettierrc.json",
 	"lint-staged": {
@@ -45,5 +50,5 @@
 			"yarn lint:raw --fix"
 		]
 	},
-	"packageManager": "yarn@4.9.1"
+	"packageManager": "yarn@4.9.2"
 }

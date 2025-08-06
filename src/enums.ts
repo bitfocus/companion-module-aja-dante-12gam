@@ -1,0 +1,15 @@
+export enum API_CALLS {
+	Discovers = '/discovers',
+	BuildInfo = '/buildInfo',
+	Status = '/status',
+	StatusSdi = '/sdi/status',
+	StatusSfp = '/sfp/status',
+	StatusDante = '/dante/status',
+	StatusEnvironment = '/environment/status',
+	StatusSystem = '/system/status',
+	Config = '/system/config',
+	ControlSdi = '/sdi/control',
+	ControlSfp = '/sfp/control',
+	Alarm = '/alarm',
+	Devices = '/net/devices',
+}
