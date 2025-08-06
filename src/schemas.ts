@@ -5,6 +5,7 @@ export const TestPattern = ['Black', '100 % Bars', 'Grey']
 export const VideoFormat = ['720p50', '720p59.94', '1080i50', '1080i59.94']
 export const LevelB = ['Stream A', 'Stream B']
 export const HancData = ['Delete', 'Pass']
+export const IpConfig = ['Static', 'DHCP']
 
 export const Discover = z.object({
 	boardID: z.string(),
@@ -82,20 +83,8 @@ export const SdiControl = z.object({
 export type SdiControl = z.infer<typeof SdiControl>
 
 export const SfpControl = z.object({
-	channels_11_12: z.enum(Channel),
-	channels_13_14: z.enum(Channel),
-	channels_15_16: z.enum(Channel),
-	channels_1_2: z.enum(Channel),
-	channels_3_4: z.enum(Channel),
-	channels_5_6: z.enum(Channel),
-	channels_7_8: z.enum(Channel),
-	channels_9_10: z.enum(Channel),
-	enableInternalSignalGenerator: z.boolean(),
-	hancData: z.enum(HancData),
-	levelB: z.enum(LevelB),
-	testPattern: z.enum(TestPattern),
+	...SdiControl.shape,
 	testTone: z.string(),
-	videoFormat: z.enum(VideoFormat),
 })
 
 export type SfpControl = z.infer<typeof SfpControl>
@@ -169,11 +158,11 @@ export type DanteStatus = z.infer<typeof DanteStatus>
 export const NetDeviceActiveParams = z.object({
 	address: z.ipv4(),
 	dnsSearch: z.string(),
-	dnsServer1: z.string(),
-	dnsServer2: z.string(),
-	gateway: z.string(),
+	dnsServer1: z.union([z.literal(''), z.ipv4()]),
+	dnsServer2: z.union([z.literal(''), z.ipv4()]),
+	gateway: z.union([z.literal(''), z.ipv4()]),
 	speed: z.string(),
-	subnet: z.ipv4(),
+	subnet: z.union([z.literal(''), z.ipv4()]),
 })
 
 export type NetDeviceActiveParams = z.infer<typeof NetDeviceActiveParams>
@@ -184,9 +173,9 @@ export type NetDeviceStagedParams = z.infer<typeof NetDeviceStagedParams>
 
 export const NetDeviceConfig = z.object({
 	enable: z.boolean(),
-	ipChangeCommit: z.number(),
-	ipConfig: z.string(),
-	pingAddress: z.string(),
+	ipChangeCommit: z.int().min(0),
+	ipConfig: z.enum(IpConfig),
+	pingAddress: z.union([z.literal(''), z.ipv4()]),
 	pingEnable: z.boolean(),
 	resetBadPacketCount: z.boolean(),
 })
