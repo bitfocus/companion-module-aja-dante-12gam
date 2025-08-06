@@ -7,6 +7,12 @@ export const LevelB = ['Stream A', 'Stream B']
 export const HancData = ['Delete', 'Pass']
 export const IpConfig = ['Static', 'DHCP']
 
+const stringToNumberSetSchema = z.string().transform((val) => {
+	const elements = val.split(',').map((item) => item.trim())
+	const filteredElements = elements.map((item) => Number.parseInt(item)).filter((item) => !Number.isNaN(item))
+	return new Set(filteredElements)
+})
+
 export const Discover = z.object({
 	boardID: z.string(),
 	boardNumber: z.string(),
@@ -147,10 +153,10 @@ export const SfpStatus = SdiStatus
 export type SfpStatus = z.infer<typeof SfpStatus>
 
 export const DanteStatus = z.object({
-	channels_17_24: z.string(),
-	channels_1_8: z.string(),
-	channels_25_32: z.string(),
-	channels_9_16: z.string(),
+	channels_17_24: stringToNumberSetSchema,
+	channels_1_8: stringToNumberSetSchema,
+	channels_25_32: stringToNumberSetSchema,
+	channels_9_16: stringToNumberSetSchema,
 })
 
 export type DanteStatus = z.infer<typeof DanteStatus>
