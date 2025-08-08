@@ -71,14 +71,14 @@ export const SystemConfig = z.object({
 export type SystemConfig = z.infer<typeof SystemConfig>
 
 export const SdiControl = z.object({
-	channels_11_12: z.enum(Channel),
-	channels_13_14: z.enum(Channel),
-	channels_15_16: z.enum(Channel),
 	channels_1_2: z.enum(Channel),
 	channels_3_4: z.enum(Channel),
 	channels_5_6: z.enum(Channel),
 	channels_7_8: z.enum(Channel),
 	channels_9_10: z.enum(Channel),
+	channels_11_12: z.enum(Channel),
+	channels_13_14: z.enum(Channel),
+	channels_15_16: z.enum(Channel),
 	enableInternalSignalGenerator: z.boolean(),
 	hancData: z.enum(HancData),
 	levelB: z.enum(LevelB),
@@ -153,10 +153,10 @@ export const SfpStatus = SdiStatus
 export type SfpStatus = z.infer<typeof SfpStatus>
 
 export const DanteStatus = z.object({
-	channels_17_24: stringToNumberSetSchema,
 	channels_1_8: stringToNumberSetSchema,
-	channels_25_32: stringToNumberSetSchema,
 	channels_9_16: stringToNumberSetSchema,
+	channels_17_24: stringToNumberSetSchema,
+	channels_25_32: stringToNumberSetSchema,
 })
 
 export type DanteStatus = z.infer<typeof DanteStatus>

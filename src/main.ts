@@ -6,24 +6,30 @@ import { UpdateActions } from './actions.js'
 import { UpdateFeedbacks } from './feedbacks.js'
 import { StatusManager } from './status.js'
 import { API_CALLS } from './enums.js'
+import { Dante12GAM } from './device.js'
 import axios, { Axios, AxiosError, AxiosResponse } from 'axios'
 import PQueue from 'p-queue'
+import { ZodError } from 'zod'
+import { SdiControl, SfpControl } from './schemas.js'
 
-const TIMEOUT = 2000
+const TIMEOUT = 1000
 const API_PATH = '/v2'
 const HEADERS = { 'Content-Type': 'application/json' }
+const POLL_INTERVAL = 1000
 
 export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 	config!: ModuleConfig // Setup in init()
 	#client!: Axios
 	#controller = new AbortController()
-	#queue = new PQueue({ concurrency: 1, interval: 30, intervalCap: 1 })
+	#queue = new PQueue({ concurrency: 4, interval: 200, intervalCap: 8 })
+	#pollTimer: NodeJS.Timeout | undefined
+	#device = new Dante12GAM()
 	private statusManager: StatusManager = new StatusManager(this)
 	constructor(internal: unknown) {
 		super(internal)
 	}
 
-	async init(config: ModuleConfig): Promise<void> {
+	public async init(config: ModuleConfig): Promise<void> {
 		this.config = config
 
 		this.updateActions() // export actions
@@ -32,27 +38,38 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 		this.configUpdated(config).catch(() => {})
 	}
 	// When module gets deleted
-	async destroy(): Promise<void> {
+	public async destroy(): Promise<void> {
 		this.log('debug', 'destroy')
 		this.#queue.clear()
 		this.#controller.abort('Destroying connection')
 	}
 
-	async configUpdated(config: ModuleConfig): Promise<void> {
+	public async configUpdated(config: ModuleConfig): Promise<void> {
+		const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+
 		this.config = config
 		process.title = this.label
+		if (this.#pollTimer) {
+			clearTimeout(this.#pollTimer)
+			this.#pollTimer = undefined
+		}
 		if (this.config.bonjourHost) {
-			this.config.host = config.bonjourHost?.split(':')[0]
-			this.config.port = Number(config.bonjourHost?.split(':')[1])
+			const [ip, rawPort] = this.config.bonjourHost.split(':')
+			const port = Number(rawPort)
+			if (ip.match(ipRegex) && !isNaN(port)) {
+				this.config.host = ip
+				this.config.port = port
+			}
 		}
 		if (this.config.host) {
 			this.setupClient(this.config)
+			this.setupPolling()
 		} else {
 			this.statusManager.updateStatus(InstanceStatus.BadConfig, `No host`)
 		}
 	}
 
-	setupClient(config: ModuleConfig): Axios {
+	private setupClient(config: ModuleConfig): Axios {
 		this.#queue.clear()
 		if (this.#client) {
 			this.#controller.abort('Setting up new client')
@@ -65,44 +82,151 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 	}
 
 	async clientGet(path: API_CALLS): Promise<AxiosResponse<any, any> | void> {
-		const response = (await this.#queue.add(
+		return await this.#queue.add(
 			async () => {
-				if (!this.#client) throw new Error('Client not initialized')
-				await this.#client
-					.get(path, {
-						signal: this.#controller.signal,
-					})
+				return await this.#client
+					.get(path)
 					.then((response) => {
 						this.statusManager.updateStatus(InstanceStatus.Ok)
+						if (this.config.verbose) {
+							this.log('debug', `Response from API call to ${path}:\n${JSON.stringify(response.data)}`)
+						}
 						return response
 					})
 					.catch((error) => {
-						if (error instanceof AxiosError) {
-							this.log('error', JSON.stringify(error))
-							this.statusManager.updateStatus(InstanceStatus.ConnectionFailure, error.code)
-						}
+						this.log('error', error.cause)
+						this.statusManager.updateStatus(InstanceStatus.ConnectionFailure, error.code)
+						if (this.config.verbose) this.log('error', JSON.stringify(error))
+						return
 					})
 			},
 			{ priority: 1 },
-		)) as Promise<AxiosResponse<any, any>> | void
-		return response
+		)
+	}
+
+	async clientPut(
+		path: API_CALLS.ControlSdi | API_CALLS.ControlSfp,
+		data: SdiControl | SfpControl,
+	): Promise<AxiosResponse<any, any> | void> {
+		return await this.#queue.add(
+			async () => {
+				return await this.#client
+					.put(path, data)
+					.then((response) => {
+						this.statusManager.updateStatus(InstanceStatus.Ok)
+						if (this.config.verbose) {
+							this.log('debug', `Response from API call to ${path}:\n${JSON.stringify(response.data)}`)
+						}
+						return response
+					})
+					.catch((error) => {
+						this.log('error', error.cause)
+						this.statusManager.updateStatus(InstanceStatus.ConnectionFailure, error.code)
+						if (this.config.verbose) this.log('error', JSON.stringify(error))
+						return
+					})
+			},
+			{ priority: 2 },
+		)
+	}
+
+	//eslint-disable-next-line
+	public handleError(err: any): void {
+		if (err instanceof AxiosError) {
+			this.statusManager.updateStatus(InstanceStatus.ConnectionFailure, err.code)
+			this.log('error', JSON.stringify(err))
+		} else if (err instanceof ZodError) {
+			this.statusManager.updateStatus(InstanceStatus.UnknownWarning, err.message)
+			this.log('warn', JSON.stringify(err))
+		} else {
+			this.statusManager.updateStatus(InstanceStatus.UnknownError)
+			this.log('debug', `Unknown error: ${err.toString()}`)
+		}
+	}
+
+	private setupPolling(): void {
+		this.#pollTimer = setTimeout(() => {
+			this.pollDevice().catch(() => {})
+			this.setupPolling()
+		}, POLL_INTERVAL)
+	}
+
+	async pollDevice(): Promise<void> {
+		if (this.#queue.size < 10) {
+			try {
+				let response = await this.clientGet(API_CALLS.StatusSystem)
+				if (response && response.data) {
+					this.#device.systemStatus = response.data
+				}
+				response = await this.clientGet(API_CALLS.BuildInfo)
+				if (response && response.data) {
+					this.#device.buildInfo = response.data
+				}
+				response = await this.clientGet(API_CALLS.Alarm)
+				if (response && response.data) {
+					this.#device.alarms = response.data
+				}
+				response = await this.clientGet(API_CALLS.Config)
+				if (response && response.data) {
+					this.#device.systemConfig = response.data
+				}
+				response = await this.clientGet(API_CALLS.ControlSdi)
+				if (response && response.data) {
+					this.#device.sdiControl = response.data
+				}
+				response = await this.clientGet(API_CALLS.ControlSfp)
+				if (response && response.data) {
+					this.#device.sfpControl = response.data
+				}
+				response = await this.clientGet(API_CALLS.StatusSdi)
+				if (response && response.data) {
+					this.#device.sdiStatus = response.data
+				}
+				response = await this.clientGet(API_CALLS.StatusSfp)
+				if (response && response.data) {
+					this.#device.sfpStatus = response.data
+				}
+				response = await this.clientGet(API_CALLS.StatusDante)
+				if (response && response.data) {
+					this.#device.danteStatus = response.data
+				}
+				response = await this.clientGet(API_CALLS.StatusEnvironment)
+				if (response && response.data) {
+					this.#device.environmentStatus = response.data
+				}
+				response = await this.clientGet(API_CALLS.Discovers)
+				if (response && response.data) {
+					this.#device.discovers = response.data
+				}
+				response = await this.clientGet(API_CALLS.Devices)
+				if (response && response.data) {
+					this.#device.netDevices = response.data
+				}
+			} catch (err) {
+				this.handleError(err)
+			}
+		}
 	}
 
 	// Return config fields for web config
-	getConfigFields(): SomeCompanionConfigField[] {
+	public getConfigFields(): SomeCompanionConfigField[] {
 		return GetConfigFields()
 	}
 
-	updateActions(): void {
-		UpdateActions(this)
+	get device(): Dante12GAM {
+		return this.#device
 	}
 
-	updateFeedbacks(): void {
+	private updateActions(): void {
+		UpdateActions(this, this.device)
+	}
+
+	private updateFeedbacks(): void {
 		UpdateFeedbacks(this)
 	}
 
-	updateVariableDefinitions(): void {
-		UpdateVariableDefinitions(this)
+	private updateVariableDefinitions(): void {
+		UpdateVariableDefinitions(this, this.device)
 	}
 }
 

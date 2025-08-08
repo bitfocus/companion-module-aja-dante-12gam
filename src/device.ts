@@ -11,7 +11,26 @@ import {
 	NetDevices,
 	EnvironmentStatus,
 	SfpStatus,
+	Alarm,
+	InputAudio,
+	InputVideo,
 } from './schemas.js'
+
+const audioGroup: InputAudio = {
+	embeddedGroup1: false,
+	embeddedGroup2: false,
+	embeddedGroup3: false,
+	embeddedGroup4: false,
+}
+
+const videoGroup: InputVideo = {
+	bitDepth: '',
+	colorimetry: '',
+	colorspace: '',
+	dataRate: '',
+	eotf: '',
+	format: '',
+}
 
 export class Dante12GAM {
 	#Discovers: Discovers = []
@@ -24,10 +43,89 @@ export class Dante12GAM {
 	#SfpControl: SfpControl
 	#SfpStatus: SdiStatus
 	#DanteStatus: DanteStatus
-	#NetDevices: NetDevices
+	#NetDevices: NetDevices = []
 	#EnvironmentStatus: EnvironmentStatus
+	#Alarms: Alarm = []
 
-	constructor() {}
+	constructor() {
+		this.#BuildInfo = {
+			buildType: '',
+			date: '',
+			qtVersion: '',
+			repoident: '',
+			serverVersion: '',
+			time: '',
+		}
+		this.#Status = {
+			licenseActive: false,
+			serialNumber: '',
+			systemDate: '',
+			systemTime: '',
+		}
+		this.#SystemStatus = {
+			mainbootVersion: '',
+			runningVersion: '',
+			safeboot: false,
+			safebootVersion: '',
+		}
+		this.#SystemConfig = {
+			authenticationEnable: false,
+			checkLicenseRequest: false,
+			domainName: '',
+			factoryPreset: false,
+			factoryReset: false,
+			hostName: '',
+			identify: false,
+			reboot: false,
+			shutdown: false,
+			ssdpEnable: false,
+			systemOrganizationName: '',
+			updateRequest: false,
+		}
+		this.#EnvironmentStatus = {
+			dieTemp: '',
+			externalPowerPresent: false,
+			fanSpeed1: 0,
+			fanSpeed2: 0,
+			poePresent: false,
+			poeT2p: false,
+		}
+		this.#SdiControl = {
+			channels_1_2: '',
+			channels_3_4: '',
+			channels_5_6: '',
+			channels_7_8: '',
+			channels_9_10: '',
+			channels_11_12: '',
+			channels_13_14: '',
+			channels_15_16: '',
+			enableInternalSignalGenerator: false,
+			hancData: '',
+			levelB: '',
+			testPattern: '',
+			videoFormat: '',
+		}
+		this.#SfpControl = {
+			...structuredClone(this.#SdiControl),
+			testTone: '',
+		}
+		this.#DanteStatus = {
+			channels_1_8: new Set<number>(),
+			channels_9_16: new Set<number>(),
+			channels_17_24: new Set<number>(),
+			channels_25_32: new Set<number>(),
+		}
+		this.#SdiStatus = {
+			inputAudio: structuredClone(audioGroup),
+			outputAudio: structuredClone(audioGroup),
+			inputVideo: structuredClone(videoGroup),
+			outputVideo: structuredClone(videoGroup),
+			inputLevelB: '',
+			inputLocked: false,
+			outputTSGEnabled: false,
+		}
+		this.#SfpStatus = structuredClone(this.#SdiStatus)
+	}
 
 	public get status(): Status {
 		return this.#Status
@@ -57,7 +155,7 @@ export class Dante12GAM {
 		return this.#Discovers
 	}
 
-	public set disovers(discovers: Discovers) {
+	public set discovers(discovers: Discovers) {
 		this.#Discovers = Discovers.parse(discovers)
 	}
 
@@ -123,5 +221,13 @@ export class Dante12GAM {
 
 	public set environmentStatus(envStatus: EnvironmentStatus) {
 		this.#EnvironmentStatus = EnvironmentStatus.parse(envStatus)
+	}
+
+	public get alarms(): Alarm {
+		return this.#Alarms
+	}
+
+	public set alarms(alarms: Alarm) {
+		this.#Alarms = Alarm.parse(alarms)
 	}
 }

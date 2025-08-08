@@ -293,3 +293,58 @@
     "systemOrganizationName": "",
     "updateRequest": false
 }
+
+PUT examples:
+
+/sdi/control
+Payload:
+{
+  "hancData": "Pass",
+  "levelB": "Stream A",
+  "channels_1_2": "Pass",
+  "channels_3_4": "Pass",
+  "channels_5_6": "Pass",
+  "channels_7_8": "Pass",
+  "channels_9_10": "Pass",
+  "channels_11_12": "Pass",
+  "channels_13_14": "Pass",
+  "channels_15_16": "Pass",
+  "enableInternalSignalGenerator": false,
+  "testPattern": "Black",
+  "videoFormat": "1080i50"
+}
+No response data
+
+/sdi/control
+Payload:
+{
+  "hancData": "Pass",
+  "levelB": "Stream A",
+  "channels_1_2": "Embed",
+  "channels_3_4": "Pass",
+  "channels_5_6": "Pass",
+  "channels_7_8": "Pass",
+  "channels_9_10": "Pass",
+  "channels_11_12": "Pass",
+  "channels_13_14": "Pass",
+  "channels_15_16": "Pass",
+  "enableInternalSignalGenerator": false,
+  "testPattern": "Black",
+  "videoFormat": "1080i50"
+}
+
+{
+  "hancData": "Pass",
+  "levelB": "Stream A",
+  "channels_1_2": "Pass",
+  "channels_3_4": "Pass",
+  "channels_5_6": "Pass",
+  "channels_7_8": "Pass",
+  "channels_9_10": "Pass",
+  "channels_11_12": "Pass",
+  "channels_13_14": "Pass",
+  "channels_15_16": "Pass",
+  "enableInternalSignalGenerator": false,
+  "testPattern": "100% Bars",
+  "videoFormat": "1080i50"
+}
