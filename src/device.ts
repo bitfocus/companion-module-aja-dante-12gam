@@ -1,3 +1,4 @@
+import EventEmitter from 'events'
 import {
 	Discovers,
 	BuildInfo,
@@ -32,7 +33,11 @@ const videoGroup: InputVideo = {
 	format: '',
 }
 
-export class Dante12GAM {
+export interface Dante12GAMEvents {
+	updateVariables: []
+}
+
+export class Dante12GAM extends EventEmitter<Dante12GAMEvents> {
 	#Discovers: Discovers = []
 	#BuildInfo: BuildInfo
 	#Status: Status
@@ -48,6 +53,7 @@ export class Dante12GAM {
 	#Alarms: Alarm = []
 
 	constructor() {
+		super()
 		this.#BuildInfo = {
 			buildType: '',
 			date: '',
@@ -156,7 +162,9 @@ export class Dante12GAM {
 	}
 
 	public set discovers(discovers: Discovers) {
-		this.#Discovers = Discovers.parse(discovers)
+		const newDiscovers = Discovers.parse(discovers)
+		if (newDiscovers.length !== this.#Discovers.length) this.emit('updateVariables')
+		this.#Discovers = newDiscovers
 	}
 
 	public get systemConfig(): SystemConfig {
@@ -212,7 +220,9 @@ export class Dante12GAM {
 	}
 
 	public set netDevices(netDevices: NetDevices) {
-		this.#NetDevices = NetDevices.parse(netDevices)
+		const newNetDevices = NetDevices.parse(netDevices)
+		if (newNetDevices.length !== this.#NetDevices.length) this.emit('updateVariables')
+		this.#NetDevices = newNetDevices
 	}
 
 	public get environmentStatus(): EnvironmentStatus {
@@ -228,6 +238,8 @@ export class Dante12GAM {
 	}
 
 	public set alarms(alarms: Alarm) {
-		this.#Alarms = Alarm.parse(alarms)
+		const newAlarms = Alarm.parse(alarms)
+		if (newAlarms.length !== this.#Alarms.length) this.emit('updateVariables')
+		this.#Alarms = newAlarms
 	}
 }

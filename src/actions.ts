@@ -2,16 +2,18 @@ import { API_CALLS } from './enums.js'
 import type { AjaDante12GAM } from './main.js'
 import { SdiControl, SfpControl } from './schemas.js'
 import { Dante12GAM } from './device.js'
+import { AxiosResponse } from 'axios'
+import { InstanceStatus } from '@companion-module/base'
 
 export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 	self.setActionDefinitions({
-		sample_action: {
-			name: 'My First Action',
+		control_port: {
+			name: 'Control Port',
 			options: [
 				{
 					id: 'type',
 					type: 'dropdown',
-					label: 'SDI / SFP',
+					label: 'Port',
 					default: 'sdi',
 					choices: [
 						{ id: 'sdi', label: 'SDI' },
@@ -39,18 +41,19 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'videoFormat', label: 'Video Format' },
 						//{ id: 'testTone', label: 'Test Tone' },
 					],
+					minSelection: 1,
 					tooltip: 'Select Parameters to set',
 				},
 				{
 					id: 'hancData',
 					type: 'dropdown',
 					label: 'HANC Data',
-					default: 'Stream A',
+					default: 'Pass',
 					choices: [
 						{ id: 'Delete', label: 'Delete' },
 						{ id: 'Pass', label: 'Pass' },
 					],
-					isVisibleExpression: `includes(options:params, hancData)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "hancData")`,
 				},
 				{
 					id: 'levelB',
@@ -61,7 +64,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'Stream A', label: 'Stream A' },
 						{ id: 'Stream B', label: 'Stream B' },
 					],
-					isVisibleExpression: `includes(options:params, levelB)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "levelB")`,
 				},
 				{
 					id: 'channels_1_2',
@@ -72,7 +75,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'Pass', label: 'Pass' },
 						{ id: 'Embed', label: 'Embed' },
 					],
-					isVisibleExpression: `includes(options:params, channels_1_2)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "channels_1_2")`,
 				},
 				{
 					id: 'channels_3_4',
@@ -83,7 +86,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'Pass', label: 'Pass' },
 						{ id: 'Embed', label: 'Embed' },
 					],
-					isVisibleExpression: `includes(options:params, channels_3_4)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "channels_3_4")`,
 				},
 				{
 					id: 'channels_5_6',
@@ -94,7 +97,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'Pass', label: 'Pass' },
 						{ id: 'Embed', label: 'Embed' },
 					],
-					isVisibleExpression: `includes(options:params, channels_5_6)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "channels_5_6")`,
 				},
 				{
 					id: 'channels_7_8',
@@ -105,7 +108,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'Pass', label: 'Pass' },
 						{ id: 'Embed', label: 'Embed' },
 					],
-					isVisibleExpression: `includes(options:params, channels_7_8)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "channels_7_8")`,
 				},
 				{
 					id: 'channels_9_10',
@@ -116,7 +119,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'Pass', label: 'Pass' },
 						{ id: 'Embed', label: 'Embed' },
 					],
-					isVisibleExpression: `includes(options:params, channels_9_10)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "channels_9_10")`,
 				},
 				{
 					id: 'channels_11_12',
@@ -127,7 +130,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'Pass', label: 'Pass' },
 						{ id: 'Embed', label: 'Embed' },
 					],
-					isVisibleExpression: `includes(options:params, channels_11_12)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "channels_11_12")`,
 				},
 				{
 					id: 'channels_13_14',
@@ -138,7 +141,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'Pass', label: 'Pass' },
 						{ id: 'Embed', label: 'Embed' },
 					],
-					isVisibleExpression: `includes(options:params, channels_13_14)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "channels_13_14")`,
 				},
 				{
 					id: 'channels_15_16',
@@ -149,14 +152,14 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: 'Pass', label: 'Pass' },
 						{ id: 'Embed', label: 'Embed' },
 					],
-					isVisibleExpression: `includes(options:params, channels_15_16)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "channels_15_16")`,
 				},
 				{
 					id: 'enableInternalSignalGenerator',
 					type: 'checkbox',
 					label: 'Signal Generator',
 					default: false,
-					isVisibleExpression: `includes(options:params, enableInternalSignalGenerator)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "enableInternalSignalGenerator")`,
 				},
 				{
 					id: 'testPattern',
@@ -165,10 +168,10 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					default: 'Black',
 					choices: [
 						{ id: 'Black', label: 'Black' },
-						{ id: '100 % Bars', label: '100 % Bars' },
+						{ id: '100% Bars', label: '100% Bars' },
 						{ id: 'Grey', label: 'Grey' },
 					],
-					isVisibleExpression: `includes(options:params, testPattern)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "testPattern")`,
 				},
 				{
 					id: 'videoFormat',
@@ -181,7 +184,15 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 						{ id: '1080i50', label: '1080i50' },
 						{ id: '1080i59.94', label: '1080i59.94' },
 					],
-					isVisibleExpression: `includes(options:params, videoFormat)`,
+					isVisibleExpression: `arrayIncludes($(options:params), "videoFormat")`,
+				},
+				{
+					id: 'testTone',
+					type: 'dropdown',
+					label: 'Test Tone',
+					default: '1kHz',
+					choices: [{ id: '1kHz', label: '1 kHz' }],
+					isVisibleExpression: `arrayIncludes($(options:params), "testTone") && ($(options:type) == 'sfp')`,
 				},
 			],
 			callback: async (action, _context) => {
@@ -203,19 +214,37 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					action.options.params.forEach((parameter) => {
 						const key = parameter.toString()
 						//@ts-expect-error msg key validation
-						if (key in msg && action.options[key]) msg[key] = action.options[key].toString()
+						if (key in msg && action.options?.[key] !== undefined) msg[key] = action.options[key].toString()
 					})
 				} else return
 				try {
-					switch (action.options['type']) {
-						case 'sdi':
-							await self.clientPut(apiCall, SdiControl.parse(msg))
-							break
-						case 'sfp':
-							await self.clientPut(apiCall, SfpControl.parse(msg))
+					const response: AxiosResponse<any, any> | void =
+						action.options['type'] == 'sdi'
+							? await self.clientPut(apiCall, SdiControl.parse(msg))
+							: await self.clientPut(apiCall, SfpControl.parse(msg))
+					if (self.config.verbose && response) {
+						self.log('debug', `${apiCall} sent. Response: ${JSON.stringify(response.data)}`)
 					}
+					self.statusManager.updateStatus(InstanceStatus.Ok)
 				} catch (err) {
 					self.handleError(err)
+				}
+			},
+			learn: (action, _context) => {
+				let controls: SdiControl | SfpControl
+				switch (action.options['type']) {
+					case 'sdi':
+						controls = device.sdiControl
+						break
+					case 'sfp':
+						controls = device.sfpControl
+						break
+					default:
+						return undefined
+				}
+				return {
+					...action.options,
+					...controls,
 				}
 			},
 		},

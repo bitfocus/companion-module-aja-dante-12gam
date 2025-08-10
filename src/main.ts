@@ -1,6 +1,7 @@
 import { InstanceBase, runEntrypoint, InstanceStatus, SomeCompanionConfigField } from '@companion-module/base'
 import { GetConfigFields, type ModuleConfig } from './config.js'
 import { UpdateVariableDefinitions } from './variables.js'
+import { UpdateVariableValues } from './values.js'
 import { UpgradeScripts } from './upgrades.js'
 import { UpdateActions } from './actions.js'
 import { UpdateFeedbacks } from './feedbacks.js'
@@ -15,7 +16,6 @@ import { SdiControl, SfpControl } from './schemas.js'
 const TIMEOUT = 1000
 const API_PATH = '/v2'
 const HEADERS = { 'Content-Type': 'application/json' }
-const POLL_INTERVAL = 1000
 
 export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 	config!: ModuleConfig // Setup in init()
@@ -24,7 +24,7 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 	#queue = new PQueue({ concurrency: 4, interval: 200, intervalCap: 8 })
 	#pollTimer: NodeJS.Timeout | undefined
 	#device = new Dante12GAM()
-	private statusManager: StatusManager = new StatusManager(this)
+	public statusManager: StatusManager = new StatusManager(this)
 	constructor(internal: unknown) {
 		super(internal)
 	}
@@ -35,13 +35,15 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 		this.updateActions() // export actions
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
+		this.#device.on('updateVariables', () => this.updateVariableDefinitions())
 		this.configUpdated(config).catch(() => {})
 	}
 	// When module gets deleted
 	public async destroy(): Promise<void> {
-		this.log('debug', 'destroy')
+		this.log('debug', `destroy ${this.id}`)
 		this.#queue.clear()
 		this.#controller.abort('Destroying connection')
+		this.statusManager.destroy()
 	}
 
 	public async configUpdated(config: ModuleConfig): Promise<void> {
@@ -93,12 +95,7 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 						}
 						return response
 					})
-					.catch((error) => {
-						this.log('error', error.cause)
-						this.statusManager.updateStatus(InstanceStatus.ConnectionFailure, error.code)
-						if (this.config.verbose) this.log('error', JSON.stringify(error))
-						return
-					})
+					.catch((error) => this.handleError(error))
 			},
 			{ priority: 1 },
 		)
@@ -119,12 +116,7 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 						}
 						return response
 					})
-					.catch((error) => {
-						this.log('error', error.cause)
-						this.statusManager.updateStatus(InstanceStatus.ConnectionFailure, error.code)
-						if (this.config.verbose) this.log('error', JSON.stringify(error))
-						return
-					})
+					.catch((error) => this.handleError(error))
 			},
 			{ priority: 2 },
 		)
@@ -134,10 +126,18 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 	public handleError(err: any): void {
 		if (err instanceof AxiosError) {
 			this.statusManager.updateStatus(InstanceStatus.ConnectionFailure, err.code)
-			this.log('error', JSON.stringify(err))
+			if (this.config.verbose) {
+				this.log('error', JSON.stringify(err))
+			} else {
+				this.log('error', err.code ?? err.message)
+			}
 		} else if (err instanceof ZodError) {
-			this.statusManager.updateStatus(InstanceStatus.UnknownWarning, err.message)
-			this.log('warn', JSON.stringify(err))
+			this.statusManager.updateStatus(InstanceStatus.UnknownWarning, err.issues[0].message)
+			if (this.config.verbose) {
+				this.log('warn', JSON.stringify(err))
+			} else {
+				this.log('warn', err.issues[0].message)
+			}
 		} else {
 			this.statusManager.updateStatus(InstanceStatus.UnknownError)
 			this.log('debug', `Unknown error: ${err.toString()}`)
@@ -148,63 +148,118 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 		this.#pollTimer = setTimeout(() => {
 			this.pollDevice().catch(() => {})
 			this.setupPolling()
-		}, POLL_INTERVAL)
+		}, this.config.pollInterval)
 	}
 
 	async pollDevice(): Promise<void> {
-		if (this.#queue.size < 10) {
+		if (this.#queue.size < 20) {
 			try {
-				let response = await this.clientGet(API_CALLS.StatusSystem)
+				const response = await this.clientGet(API_CALLS.StatusSystem)
 				if (response && response.data) {
 					this.#device.systemStatus = response.data
 				}
-				response = await this.clientGet(API_CALLS.BuildInfo)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.Status)
+				if (response && response.data) {
+					this.#device.status = response.data
+				}
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.BuildInfo)
 				if (response && response.data) {
 					this.#device.buildInfo = response.data
 				}
-				response = await this.clientGet(API_CALLS.Alarm)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.Alarm)
 				if (response && response.data) {
 					this.#device.alarms = response.data
+					if (this.#device.alarms.length > 0) this.log('warn', JSON.stringify(this.#device.alarms))
 				}
-				response = await this.clientGet(API_CALLS.Config)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.Config)
 				if (response && response.data) {
 					this.#device.systemConfig = response.data
 				}
-				response = await this.clientGet(API_CALLS.ControlSdi)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.ControlSdi)
 				if (response && response.data) {
 					this.#device.sdiControl = response.data
 				}
-				response = await this.clientGet(API_CALLS.ControlSfp)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.ControlSfp)
 				if (response && response.data) {
 					this.#device.sfpControl = response.data
 				}
-				response = await this.clientGet(API_CALLS.StatusSdi)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.StatusSdi)
 				if (response && response.data) {
 					this.#device.sdiStatus = response.data
 				}
-				response = await this.clientGet(API_CALLS.StatusSfp)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.StatusSfp)
 				if (response && response.data) {
 					this.#device.sfpStatus = response.data
 				}
-				response = await this.clientGet(API_CALLS.StatusDante)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.StatusDante)
 				if (response && response.data) {
 					this.#device.danteStatus = response.data
 				}
-				response = await this.clientGet(API_CALLS.StatusEnvironment)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.StatusEnvironment)
 				if (response && response.data) {
 					this.#device.environmentStatus = response.data
 				}
-				response = await this.clientGet(API_CALLS.Discovers)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.Discovers)
 				if (response && response.data) {
 					this.#device.discovers = response.data
 				}
-				response = await this.clientGet(API_CALLS.Devices)
+			} catch (err) {
+				this.handleError(err)
+			}
+			try {
+				const response = await this.clientGet(API_CALLS.Devices)
 				if (response && response.data) {
 					this.#device.netDevices = response.data
 				}
 			} catch (err) {
 				this.handleError(err)
 			}
+			this.checkFeedbacks()
+			this.updateVariableValues()
 		}
 	}
 
@@ -227,6 +282,10 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 
 	private updateVariableDefinitions(): void {
 		UpdateVariableDefinitions(this, this.device)
+	}
+
+	private updateVariableValues(): void {
+		UpdateVariableValues(this, this.device)
 	}
 }
 

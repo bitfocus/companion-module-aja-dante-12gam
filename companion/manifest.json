@@ -1,7 +1,7 @@
 {
-	"id": "aja-dante12gam",
-	"name": "aja-dante12gam",
-	"shortname": "DANTE 12GAM",
+	"id": "aja-dante-12gam",
+	"name": "aja-dante-12gam",
+	"shortname": "DANTE-12GAM",
 	"description": "Dante 12GAM Audio Embedder",
 	"version": "0.0.0",
 	"license": "MIT",
@@ -22,7 +22,7 @@
 	"legacyIds": [],
 	"manufacturer": "AJA",
 	"products": ["DANTE 12GAM"],
-	"keywords": ["DANTE", "SDI", "EMBEDDER", "DEMBEDDER"],
+	"keywords": ["DANTE", "SDI", "EMBED"],
 	"bonjourQueries": {
 		"bonjourHost": [
 			{

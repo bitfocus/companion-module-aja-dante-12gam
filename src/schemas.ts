@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const Channel = ['Pass', 'Embed']
-export const TestPattern = ['Black', '100 % Bars', 'Grey']
+export const TestPattern = ['Black', '100% Bars', 'Grey']
 export const VideoFormat = ['720p50', '720p59.94', '1080i50', '1080i59.94']
 export const LevelB = ['Stream A', 'Stream B']
 export const HancData = ['Delete', 'Pass']
@@ -168,7 +168,7 @@ export const NetDeviceActiveParams = z.object({
 	dnsServer2: z.union([z.literal(''), z.ipv4()]),
 	gateway: z.union([z.literal(''), z.ipv4()]),
 	speed: z.string(),
-	subnet: z.union([z.literal(''), z.ipv4()]),
+	subnet: z.string(),
 })
 
 export type NetDeviceActiveParams = z.infer<typeof NetDeviceActiveParams>
@@ -192,7 +192,7 @@ export const NetDeviceStatus = z.object({
 	connected: z.boolean(),
 	dhcpState: z.string(),
 	interfaceSetupState: z.string(),
-	ipAddressOffered: z.ipv4(),
+	ipAddressOffered: z.union([z.literal(''), z.ipv4()]),
 	linkErrors: z.int().min(0),
 	linkState: z.string(),
 	lldpChassisId: z.string(),
