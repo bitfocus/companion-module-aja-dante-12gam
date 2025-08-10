@@ -1,4 +1,4 @@
-# companion-module-aja-dante12gam
+# companion-module-aja-dante-12gam
 
 See [HELP.md](./companion/HELP.md) and [LICENSE](./LICENSE)
 
