@@ -13,7 +13,7 @@ import PQueue from 'p-queue'
 import { ZodError } from 'zod'
 import { SdiControl, SfpControl } from './schemas.js'
 
-const TIMEOUT = 1000
+const TIMEOUT = 2000
 const API_PATH = '/v2'
 const HEADERS = { 'Content-Type': 'application/json' }
 
@@ -41,6 +41,10 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 	// When module gets deleted
 	public async destroy(): Promise<void> {
 		this.log('debug', `destroy ${this.id}`)
+		if (this.#pollTimer) {
+			clearTimeout(this.#pollTimer)
+			this.#pollTimer = undefined
+		}
 		this.#queue.clear()
 		this.#controller.abort('Destroying connection')
 		this.statusManager.destroy()
@@ -258,7 +262,7 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 			} catch (err) {
 				this.handleError(err)
 			}
-			this.checkFeedbacks()
+			// this.checkFeedbacks()
 			this.updateVariableValues()
 		}
 	}

@@ -4,10 +4,10 @@ Not compatible with the `OG-DANTE-12GAM`.
 
 ### Actions
 
-- _Control Port_
+- **Control Port**
 
 ### Feedbacks
 
 ### Variables
 
-- All status data available as variables.
+All status data available as variables.

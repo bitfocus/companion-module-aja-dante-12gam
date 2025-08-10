@@ -57,7 +57,7 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			width: 4,
 			min: 200,
 			max: 60000,
-			default: 1000,
+			default: 5000,
 		},
 		{
 			type: 'checkbox',
