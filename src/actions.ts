@@ -231,21 +231,19 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 				}
 			},
 			learn: (action, _context) => {
-				let controls: SdiControl | SfpControl
 				switch (action.options['type']) {
 					case 'sdi':
-						controls = device.sdiControl
-						break
+						return {
+							...action.options,
+							...device.sdiControl,
+						}
 					case 'sfp':
-						controls = device.sfpControl
-						break
-					default:
-						return undefined
+						return {
+							...action.options,
+							...device.sfpControl,
+						}
 				}
-				return {
-					...action.options,
-					...controls,
-				}
+				return undefined
 			},
 		},
 	})
