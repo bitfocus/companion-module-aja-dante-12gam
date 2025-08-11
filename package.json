@@ -16,7 +16,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/phillipivan/companion-module-aja-dante12gam.git"
+		"url": "git+https://github.com/bitfocus/companion-module-aja-dante12gam.git"
 	},
 	"engines": {
 		"node": "^22.17",

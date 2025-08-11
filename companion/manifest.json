@@ -5,8 +5,8 @@
 	"description": "Dante 12GAM Audio Embedder",
 	"version": "0.0.0",
 	"license": "MIT",
-	"repository": "git+https://github.com/phillipivan/companion-module-aja-dante12gam.git",
-	"bugs": "https://github.com/phillipivan/companion-module-aja-dante12gam/issues",
+	"repository": "git+https://github.com/bitfocus/companion-module-aja-dante12gam.git",
+	"bugs": "https://github.com/bitfocus/companion-module-aja-dante12gam/issues",
 	"maintainers": [
 		{
 			"name": "Phillip Ivan Pietruschka",
