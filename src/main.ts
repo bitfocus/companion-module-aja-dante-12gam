@@ -262,7 +262,7 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 			} catch (err) {
 				this.handleError(err)
 			}
-			// this.checkFeedbacks()
+			this.checkFeedbacks()
 			this.updateVariableValues()
 		}
 	}

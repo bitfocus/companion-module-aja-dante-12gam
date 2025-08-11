@@ -8,6 +8,10 @@ Not compatible with the `OG-DANTE-12GAM`.
 
 ### Feedbacks
 
+- **Dante Channels**
+- **Embedded Audio**
+- **Input Locked**
+
 ### Variables
 
-All status data available as variables.
+All data available as variables.

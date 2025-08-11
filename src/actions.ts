@@ -3,11 +3,20 @@ import type { AjaDante12GAM } from './main.js'
 import { SdiControl, SfpControl } from './schemas.js'
 import { Dante12GAM } from './device.js'
 import { AxiosResponse } from 'axios'
-import { InstanceStatus } from '@companion-module/base'
+import {
+	CompanionActionContext,
+	CompanionActionDefinition,
+	CompanionActionEvent,
+	InstanceStatus,
+} from '@companion-module/base'
+
+export enum ActionId {
+	ControlPort = 'control_port',
+}
 
 export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
-	self.setActionDefinitions({
-		control_port: {
+	const actions: { [id in ActionId]: CompanionActionDefinition | undefined } = {
+		[ActionId.ControlPort]: {
 			name: 'Control Port',
 			options: [
 				{
@@ -194,8 +203,15 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					choices: [{ id: '1kHz', label: '1 kHz' }],
 					isVisibleExpression: `arrayIncludes($(options:params), "testTone") && ($(options:type) == 'sfp')`,
 				},
+				{
+					id: 'testToneText',
+					type: 'static-text',
+					label: '',
+					value: 'Test Tone control is only available on the SFP port.',
+					isVisibleExpression: `arrayIncludes($(options:params), "testTone") && ($(options:type) == 'sdi')`,
+				},
 			],
-			callback: async (action, _context) => {
+			callback: async (action: CompanionActionEvent, _context: CompanionActionContext) => {
 				let msg: SdiControl | SfpControl
 				let apiCall: API_CALLS
 				switch (action.options['type']) {
@@ -230,7 +246,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					self.handleError(err)
 				}
 			},
-			learn: (action, _context) => {
+			learn: (action: CompanionActionEvent, _context: CompanionActionContext) => {
 				switch (action.options['type']) {
 					case 'sdi':
 						return {
@@ -246,5 +262,6 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 				return undefined
 			},
 		},
-	})
+	}
+	self.setActionDefinitions(actions)
 }
