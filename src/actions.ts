@@ -230,7 +230,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					action.options.params.forEach((parameter) => {
 						const key = parameter.toString()
 						//@ts-expect-error msg key validation
-						if (key in msg && action.options?.[key] !== undefined) msg[key] = action.options[key].toString()
+						if (key in msg && action.options?.[key] !== undefined) msg[key] = action.options[key]
 					})
 				} else return
 				try {

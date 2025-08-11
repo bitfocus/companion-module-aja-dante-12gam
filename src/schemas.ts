@@ -45,7 +45,7 @@ export const BuildInfo = z.object({
 export type BuildInfo = z.infer<typeof BuildInfo>
 
 export const Status = z.object({
-	licenseActive: z.boolean(),
+	licenseActive: z.union([z.boolean(), z.stringbool()]),
 	serialNumber: z.string(),
 	systemDate: z.string(),
 	systemTime: z.iso.time(),
@@ -54,18 +54,18 @@ export const Status = z.object({
 export type Status = z.infer<typeof Status>
 
 export const SystemConfig = z.object({
-	authenticationEnable: z.boolean(),
-	checkLicenseRequest: z.boolean(),
+	authenticationEnable: z.union([z.boolean(), z.stringbool()]),
+	checkLicenseRequest: z.union([z.boolean(), z.stringbool()]),
 	domainName: z.string(),
-	factoryPreset: z.boolean(),
-	factoryReset: z.boolean(),
+	factoryPreset: z.union([z.boolean(), z.stringbool()]),
+	factoryReset: z.union([z.boolean(), z.stringbool()]),
 	hostName: z.string(),
-	identify: z.boolean(),
-	reboot: z.boolean(),
-	shutdown: z.boolean(),
-	ssdpEnable: z.boolean(),
+	identify: z.union([z.boolean(), z.stringbool()]),
+	reboot: z.union([z.boolean(), z.stringbool()]),
+	shutdown: z.union([z.boolean(), z.stringbool()]),
+	ssdpEnable: z.union([z.boolean(), z.stringbool()]),
 	systemOrganizationName: z.string(),
-	updateRequest: z.boolean(),
+	updateRequest: z.union([z.boolean(), z.stringbool()]),
 })
 
 export type SystemConfig = z.infer<typeof SystemConfig>
@@ -79,7 +79,7 @@ export const SdiControl = z.object({
 	channels_11_12: z.enum(Channel),
 	channels_13_14: z.enum(Channel),
 	channels_15_16: z.enum(Channel),
-	enableInternalSignalGenerator: z.boolean(),
+	enableInternalSignalGenerator: z.union([z.boolean(), z.stringbool()]),
 	hancData: z.enum(HancData),
 	levelB: z.enum(LevelB),
 	testPattern: z.enum(TestPattern),
@@ -98,7 +98,7 @@ export type SfpControl = z.infer<typeof SfpControl>
 export const SystemStatus = z.object({
 	mainbootVersion: z.string(),
 	runningVersion: z.string(),
-	safeboot: z.boolean(),
+	safeboot: z.union([z.boolean(), z.stringbool()]),
 	safebootVersion: z.string(),
 })
 
@@ -109,10 +109,10 @@ export const Alarm = z.array(z.any())
 export type Alarm = z.infer<typeof Alarm>
 
 export const InputAudio = z.object({
-	embeddedGroup1: z.boolean(),
-	embeddedGroup2: z.boolean(),
-	embeddedGroup3: z.boolean(),
-	embeddedGroup4: z.boolean(),
+	embeddedGroup1: z.union([z.boolean(), z.stringbool()]),
+	embeddedGroup2: z.union([z.boolean(), z.stringbool()]),
+	embeddedGroup3: z.union([z.boolean(), z.stringbool()]),
+	embeddedGroup4: z.union([z.boolean(), z.stringbool()]),
 })
 
 export type InputAudio = z.infer<typeof InputAudio>
@@ -142,8 +142,8 @@ export const SdiStatus = z.object({
 	inputVideo: InputVideo,
 	outputVideo: OutputVideo,
 	inputLevelB: z.string(),
-	inputLocked: z.boolean(),
-	outputTSGEnabled: z.boolean(),
+	inputLocked: z.union([z.boolean(), z.stringbool()]),
+	outputTSGEnabled: z.union([z.boolean(), z.stringbool()]),
 })
 
 export type SdiStatus = z.infer<typeof SdiStatus>
@@ -178,18 +178,18 @@ export const NetDeviceStagedParams = NetDeviceActiveParams
 export type NetDeviceStagedParams = z.infer<typeof NetDeviceStagedParams>
 
 export const NetDeviceConfig = z.object({
-	enable: z.boolean(),
+	enable: z.union([z.boolean(), z.stringbool()]),
 	ipChangeCommit: z.int().min(0),
 	ipConfig: z.enum(IpConfig),
 	pingAddress: z.union([z.literal(''), z.ipv4()]),
-	pingEnable: z.boolean(),
-	resetBadPacketCount: z.boolean(),
+	pingEnable: z.union([z.boolean(), z.stringbool()]),
+	resetBadPacketCount: z.union([z.boolean(), z.stringbool()]),
 })
 
 export type NetDeviceConfig = z.infer<typeof NetDeviceConfig>
 
 export const NetDeviceStatus = z.object({
-	connected: z.boolean(),
+	connected: z.union([z.boolean(), z.stringbool()]),
 	dhcpState: z.string(),
 	interfaceSetupState: z.string(),
 	ipAddressOffered: z.union([z.literal(''), z.ipv4()]),
@@ -220,11 +220,11 @@ export type NetDevices = z.infer<typeof NetDevices>
 
 export const EnvironmentStatus = z.object({
 	dieTemp: z.string(),
-	externalPowerPresent: z.boolean(),
+	externalPowerPresent: z.union([z.boolean(), z.stringbool()]),
 	fanSpeed1: z.int().min(0),
 	fanSpeed2: z.int().min(0),
-	poePresent: z.boolean(),
-	poeT2p: z.boolean(),
+	poePresent: z.union([z.boolean(), z.stringbool()]),
+	poeT2p: z.union([z.boolean(), z.stringbool()]),
 })
 
 export type EnvironmentStatus = z.infer<typeof EnvironmentStatus>
