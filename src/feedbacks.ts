@@ -117,8 +117,7 @@ export function UpdateFeedbacks(self: AjaDante12GAM): void {
 			],
 			callback: (feedback, _context) => {
 				const status = self.device.danteStatus
-				let check = true
-				check &&= new Set<number>(feedback.options['ch_1_8'] as number[]).isSubsetOf(status.channels_1_8)
+				let check = new Set<number>(feedback.options['ch_1_8'] as number[]).isSubsetOf(status.channels_1_8)
 				check &&= new Set<number>(feedback.options['ch_9_16'] as number[]).isSubsetOf(status.channels_9_16)
 				check &&= new Set<number>(feedback.options['ch_17_24'] as number[]).isSubsetOf(status.channels_17_24)
 				check &&= new Set<number>(feedback.options['ch_25_32'] as number[]).isSubsetOf(status.channels_25_32)
