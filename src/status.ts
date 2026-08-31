@@ -1,5 +1,5 @@
-import { InstanceBase, InstanceStatus } from '@companion-module/base'
-import type { ModuleConfig } from './config.js'
+import { InstanceStatus } from '@companion-module/base'
+import type AjaDante12GAM from './main.js'
 import { throttle } from 'lodash'
 
 export interface Status {
@@ -10,7 +10,7 @@ export interface Status {
 /**
  * Status Manager Utility
  * Only calls update Status if status has actually changed, with a configurable debounce
- * @param self InstanceBase from which to call updateStatus
+ * @param self Module instance from which to call updateStatus
  * @param initStatus Status to be set on init
  * @param throttleTimeout Throttle duration to limit status update rate
  *
@@ -19,12 +19,12 @@ export interface Status {
 export class StatusManager {
 	#currentStatus: Status = { status: InstanceStatus.Disconnected, message: '' }
 	#newStatus: Status = { status: InstanceStatus.Disconnected, message: '' }
-	#parentInstance!: InstanceBase<ModuleConfig>
+	#parentInstance!: AjaDante12GAM
 	#throttleTimeout: number = 2000
 	#isDestroyed: boolean = false
 
 	constructor(
-		self: InstanceBase<ModuleConfig>,
+		self: AjaDante12GAM,
 		initStatus: Status = { status: InstanceStatus.Disconnected, message: null },
 		throttleTimeout: number = 2000,
 	) {

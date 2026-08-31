@@ -1,11 +1,25 @@
 import { z } from 'zod'
 
-export const Channel = ['Pass', 'Embed']
-export const TestPattern = ['Black', '100% Bars', 'Grey']
-export const VideoFormat = ['720p50', '720p59.94', '1080i50', '1080i59.94']
-export const LevelB = ['Stream A', 'Stream B']
-export const HancData = ['Delete', 'Pass']
-export const IpConfig = ['Static', 'DHCP']
+// These are `as const` so that `z.enum()` infers a union of literals rather than `string`.
+// The literal types flow through to the action/feedback option types.
+
+export const Channel = ['Pass', 'Embed'] as const
+export type Channel = (typeof Channel)[number]
+
+export const TestPattern = ['Black', '100% Bars', 'Grey'] as const
+export type TestPattern = (typeof TestPattern)[number]
+
+export const VideoFormat = ['720p50', '720p59.94', '1080i50', '1080i59.94'] as const
+export type VideoFormat = (typeof VideoFormat)[number]
+
+export const LevelB = ['Stream A', 'Stream B'] as const
+export type LevelB = (typeof LevelB)[number]
+
+export const HancData = ['Delete', 'Pass'] as const
+export type HancData = (typeof HancData)[number]
+
+export const IpConfig = ['Static', 'DHCP'] as const
+export type IpConfig = (typeof IpConfig)[number]
 
 const stringToNumberSetSchema = z.string().transform((val) => {
 	const elements = val.split(',').map((item) => item.trim())

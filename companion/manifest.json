@@ -1,5 +1,7 @@
 {
+	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
 	"id": "aja-dante-12gam",
+	"type": "connection",
 	"name": "aja-dante-12gam",
 	"shortname": "DANTE-12GAM",
 	"description": "Dante 12GAM Audio Embedder",
@@ -14,7 +16,7 @@
 		}
 	],
 	"runtime": {
-		"type": "node22",
+		"type": "node26",
 		"api": "nodejs-ipc",
 		"apiVersion": "0.0.0",
 		"entrypoint": "../dist/main.js"

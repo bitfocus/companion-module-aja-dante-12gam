@@ -1,70 +1,104 @@
-import type { AjaDante12GAM } from './main.js'
+import type AjaDante12GAM from './main.js'
 import type { Dante12GAM } from './device.js'
-import { CompanionVariableDefinition } from '@companion-module/base'
+import type { CompanionVariableDefinition, CompanionVariableDefinitions } from '@companion-module/base'
+import type {
+	FlatVariables,
+	IndexedNestedVariables,
+	IndexedVariables,
+	OneLevelVariables,
+	VariableSchema,
+} from './types.js'
+import { entriesOf, keysOf } from './util.js'
+
+/** The definitions for a set of variables. Only the names differ per variable, the shape does not. */
+type DefinitionsFor<TVariables> = { [K in Extract<keyof TVariables, string>]: CompanionVariableDefinition }
+
+/** Definitions for a flat object, named `prefix_key` */
+function flatDefinitions<TPrefix extends string, TShape extends object>(
+	prefix: TPrefix,
+	shape: TShape,
+	label: string,
+): DefinitionsFor<FlatVariables<TPrefix, TShape>> {
+	const defs: Record<string, CompanionVariableDefinition> = {}
+	for (const key of keysOf(shape)) {
+		defs[`${prefix}_${key}`] = { name: `${label}: ${key}` }
+	}
+	return defs as DefinitionsFor<FlatVariables<TPrefix, TShape>>
+}
+
+/** Definitions for an object of mixed scalar and object values, flattened one level */
+function oneLevelDefinitions<TPrefix extends string, TShape extends object>(
+	prefix: TPrefix,
+	shape: TShape,
+	label: string,
+): DefinitionsFor<OneLevelVariables<TPrefix, TShape>> {
+	const defs: Record<string, CompanionVariableDefinition> = {}
+	for (const [key, value] of entriesOf(shape)) {
+		if (typeof value === 'object' && value !== null) {
+			for (const key2 of keysOf(value)) {
+				defs[`${prefix}_${key}_${key2}`] = { name: `${label}: ${key} - ${key2}` }
+			}
+		} else {
+			defs[`${prefix}_${key}`] = { name: `${label}: ${key}` }
+		}
+	}
+	return defs as DefinitionsFor<OneLevelVariables<TPrefix, TShape>>
+}
+
+/** Definitions for one entry of an array of flat objects, named `prefix_index_key` */
+function indexedDefinitions<TPrefix extends string, TShape extends object>(
+	prefix: TPrefix,
+	index: number,
+	shape: TShape,
+	label: string,
+): DefinitionsFor<IndexedVariables<TPrefix, TShape>> {
+	const defs: Record<string, CompanionVariableDefinition> = {}
+	for (const key of keysOf(shape)) {
+		defs[`${prefix}_${index}_${key}`] = { name: `${label}: ${index} - ${key}` }
+	}
+	return defs as DefinitionsFor<IndexedVariables<TPrefix, TShape>>
+}
+
+/** Definitions for one entry of an array of nested objects, named `prefix_index_key_subkey` */
+function indexedNestedDefinitions<TPrefix extends string, TShape extends object>(
+	prefix: TPrefix,
+	index: number,
+	shape: TShape,
+	label: string,
+): DefinitionsFor<IndexedNestedVariables<TPrefix, TShape>> {
+	const defs: Record<string, CompanionVariableDefinition> = {}
+	for (const [key, value] of entriesOf(shape)) {
+		if (typeof value !== 'object' || value === null) continue
+		for (const key2 of keysOf(value)) {
+			defs[`${prefix}_${index}_${key}_${key2}`] = { name: `${label} [${index}]: ${key} - ${key2}` }
+		}
+	}
+	return defs as DefinitionsFor<IndexedNestedVariables<TPrefix, TShape>>
+}
 
 export function UpdateVariableDefinitions(self: AjaDante12GAM, device: Dante12GAM): void {
-	const variableDefs: CompanionVariableDefinition[] = []
-	variableDefs.push({ variableId: `alarms`, name: `Number of Alarms` })
-	for (const [key, _value] of Object.entries(device.buildInfo)) {
-		variableDefs.push({ variableId: `buildInfo_${key}`, name: `Build Info: ${key}` })
+	// Every statically named variable in the schema must be defined here, or this fails to compile
+	const variableDefs: CompanionVariableDefinitions<VariableSchema> = {
+		alarms: { name: `Number of Alarms` },
+		...flatDefinitions('buildInfo', device.buildInfo, 'Build Info'),
+		...flatDefinitions('status', device.status, 'Status'),
+		...flatDefinitions('systemStatus', device.systemStatus, 'System Status'),
+		...flatDefinitions('systemConfig', device.systemConfig, 'System Config'),
+		...flatDefinitions('sdiControl', device.sdiControl, 'SDI Control'),
+		...flatDefinitions('sfpControl', device.sfpControl, 'SFP Control'),
+		...flatDefinitions('danteStatus', device.danteStatus, 'Dante Status'),
+		...flatDefinitions('environmentStatus', device.environmentStatus, 'Environment Status'),
+		...oneLevelDefinitions('sdiStatus', device.sdiStatus, 'SDI Status'),
+		...oneLevelDefinitions('sfpStatus', device.sfpStatus, 'SFP Status'),
 	}
-	for (const [key, _value] of Object.entries(device.status)) {
-		variableDefs.push({ variableId: `status_${key}`, name: `Status: ${key}` })
+
+	// These are keyed by array index, so they only exist once the device has reported them
+	for (const [index, discover] of device.discovers.entries()) {
+		Object.assign(variableDefs, indexedDefinitions('discovers', index, discover, 'Discovers'))
 	}
-	for (const [key, _value] of Object.entries(device.systemStatus)) {
-		variableDefs.push({ variableId: `systemStatus_${key}`, name: `System Status: ${key}` })
+	for (const [index, netDevice] of device.netDevices.entries()) {
+		Object.assign(variableDefs, indexedNestedDefinitions('netDevice', index, netDevice, 'Net Device'))
 	}
-	for (const [key, _value] of Object.entries(device.systemConfig)) {
-		variableDefs.push({ variableId: `systemConfig_${key}`, name: `System Config: ${key}` })
-	}
-	for (const [key, _value] of Object.entries(device.sdiControl)) {
-		variableDefs.push({ variableId: `sdiControl_${key}`, name: `SDI Control: ${key}` })
-	}
-	for (const [key, _value] of Object.entries(device.sfpControl)) {
-		variableDefs.push({ variableId: `sfpControl_${key}`, name: `SFP Control: ${key}` })
-	}
-	for (const [key, _value] of Object.entries(device.danteStatus)) {
-		variableDefs.push({ variableId: `danteStatus_${key}`, name: `Dante Status: ${key}` })
-	}
-	for (const [key, _value] of Object.entries(device.environmentStatus)) {
-		variableDefs.push({ variableId: `environmentStatus_${key}`, name: `Environment Status: ${key}` })
-	}
-	for (const [i, value] of device.discovers.entries()) {
-		if (typeof value == 'object' && value !== null) {
-			for (const [key2, _value2] of Object.entries(value)) {
-				variableDefs.push({ variableId: `discovers_${i}_${key2}`, name: `Disocvers: ${i} - ${key2}` })
-			}
-		}
-	}
-	for (const [key, value] of Object.entries(device.sdiStatus)) {
-		if (typeof value == 'object' && value !== null) {
-			for (const [key2, _value2] of Object.entries(value)) {
-				variableDefs.push({ variableId: `sdiStatus_${key}_${key2}`, name: `SDI Status: ${key} - ${key2}` })
-			}
-		} else {
-			variableDefs.push({ variableId: `sdiStatus_${key}`, name: `SDI Status: ${key}` })
-		}
-	}
-	for (const [key, value] of Object.entries(device.sfpStatus)) {
-		if (typeof value == 'object' && value !== null) {
-			for (const [key2, _value2] of Object.entries(value)) {
-				variableDefs.push({ variableId: `sfpStatus${key}_${key2}`, name: `SFP Status: ${key} - ${key2}` })
-			}
-		} else {
-			variableDefs.push({ variableId: `sfpStatus_${key}`, name: `SFP Status: ${key}` })
-		}
-	}
-	for (const [i, netDevice] of device.netDevices.entries()) {
-		for (const [key, value] of Object.entries(netDevice)) {
-			if (typeof value == 'object' && value !== null) {
-				for (const [key2, _value2] of Object.entries(value)) {
-					variableDefs.push({
-						variableId: `netDevice_${i}_${key}_${key2}`,
-						name: `Net Device [${i}]: ${key} - ${key2}`,
-					})
-				}
-			}
-		}
-	}
+
 	self.setVariableDefinitions(variableDefs)
 }

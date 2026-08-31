@@ -1,5 +1,5 @@
-import { InstanceBase, runEntrypoint, InstanceStatus, SomeCompanionConfigField } from '@companion-module/base'
-import { GetConfigFields, type ModuleConfig } from './config.js'
+import { InstanceBase, InstanceStatus, SomeCompanionConfigField } from '@companion-module/base'
+import { GetConfigFields, type ModuleConfig, type ModuleSecrets } from './config.js'
 import { UpdateVariableDefinitions } from './variables.js'
 import { UpdateVariableValues } from './values.js'
 import { UpgradeScripts } from './upgrades.js'
@@ -12,12 +12,15 @@ import axios, { Axios, AxiosError, AxiosResponse } from 'axios'
 import PQueue from 'p-queue'
 import { ZodError } from 'zod'
 import { SdiControl, SfpControl } from './schemas.js'
+import type { InstanceBaseExt, ModuleTypes } from './types.js'
 
 const TIMEOUT = 2000
 const API_PATH = '/v2'
 const HEADERS = { 'Content-Type': 'application/json' }
 
-export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
+export { UpgradeScripts }
+
+export default class AjaDante12GAM extends InstanceBase<ModuleTypes> implements InstanceBaseExt {
 	config!: ModuleConfig // Setup in init()
 	#client!: Axios
 	#controller = new AbortController()
@@ -29,14 +32,14 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 		super(internal)
 	}
 
-	public async init(config: ModuleConfig): Promise<void> {
+	public async init(config: ModuleConfig, _isFirstInit: boolean, secrets: ModuleSecrets): Promise<void> {
 		this.config = config
 
 		this.updateActions() // export actions
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
 		this.#device.on('updateVariables', () => this.updateVariableDefinitions())
-		this.configUpdated(config).catch(() => {})
+		this.configUpdated(config, secrets).catch(() => {})
 	}
 	// When module gets deleted
 	public async destroy(): Promise<void> {
@@ -50,7 +53,7 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 		this.statusManager.destroy()
 	}
 
-	public async configUpdated(config: ModuleConfig): Promise<void> {
+	public async configUpdated(config: ModuleConfig, _secrets: ModuleSecrets): Promise<void> {
 		const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
 
 		this.config = config
@@ -262,7 +265,7 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 			} catch (err) {
 				this.handleError(err)
 			}
-			this.checkFeedbacks()
+			this.checkAllFeedbacks()
 			this.updateVariableValues()
 		}
 	}
@@ -292,5 +295,3 @@ export class AjaDante12GAM extends InstanceBase<ModuleConfig> {
 		UpdateVariableValues(this, this.device)
 	}
 }
-
-runEntrypoint(AjaDante12GAM, UpgradeScripts)

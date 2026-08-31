@@ -44,8 +44,10 @@ export class Dante12GAM extends EventEmitter<Dante12GAMEvents> {
 	#SystemStatus: SystemStatus
 	#SystemConfig: SystemConfig
 	#SdiControl: SdiControl
+	#SdiControlKnown = false
 	#SdiStatus: SdiStatus
 	#SfpControl: SfpControl
+	#SfpControlKnown = false
 	#SfpStatus: SdiStatus
 	#DanteStatus: DanteStatus
 	#NetDevices: NetDevices = []
@@ -97,19 +99,19 @@ export class Dante12GAM extends EventEmitter<Dante12GAMEvents> {
 			poeT2p: false,
 		}
 		this.#SdiControl = {
-			channels_1_2: '',
-			channels_3_4: '',
-			channels_5_6: '',
-			channels_7_8: '',
-			channels_9_10: '',
-			channels_11_12: '',
-			channels_13_14: '',
-			channels_15_16: '',
+			channels_1_2: 'Pass',
+			channels_3_4: 'Pass',
+			channels_5_6: 'Pass',
+			channels_7_8: 'Pass',
+			channels_9_10: 'Pass',
+			channels_11_12: 'Pass',
+			channels_13_14: 'Pass',
+			channels_15_16: 'Pass',
 			enableInternalSignalGenerator: false,
-			hancData: '',
-			levelB: '',
-			testPattern: '',
-			videoFormat: '',
+			hancData: 'Pass',
+			levelB: 'Stream A',
+			testPattern: 'Black',
+			videoFormat: '720p50',
 		}
 		this.#SfpControl = {
 			...structuredClone(this.#SdiControl),
@@ -181,6 +183,15 @@ export class Dante12GAM extends EventEmitter<Dante12GAMEvents> {
 
 	public set sdiControl(sdiControl: SdiControl) {
 		this.#SdiControl = SdiControl.parse(sdiControl)
+		this.#SdiControlKnown = true
+	}
+
+	/**
+	 * Whether the SDI control state has been read from the device.
+	 * Until it has, `sdiControl` holds placeholder defaults which must not be sent back to the device.
+	 */
+	public get sdiControlKnown(): boolean {
+		return this.#SdiControlKnown
 	}
 
 	public get sdiStatus(): SdiStatus {
@@ -197,6 +208,15 @@ export class Dante12GAM extends EventEmitter<Dante12GAMEvents> {
 
 	public set sfpControl(sfpControl: SfpControl) {
 		this.#SfpControl = SfpControl.parse(sfpControl)
+		this.#SfpControlKnown = true
+	}
+
+	/**
+	 * Whether the SFP control state has been read from the device.
+	 * Until it has, `sfpControl` holds placeholder defaults which must not be sent back to the device.
+	 */
+	public get sfpControlKnown(): boolean {
+		return this.#SfpControlKnown
 	}
 
 	public get sfpStatus(): SfpStatus {

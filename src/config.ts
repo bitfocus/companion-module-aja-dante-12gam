@@ -1,12 +1,14 @@
 import { Regex, type SomeCompanionConfigField } from '@companion-module/base'
 
-export interface ModuleConfig {
+export type ModuleConfig = {
 	bonjourHost?: string
 	host: string
 	port: number
 	pollInterval: number
 	verbose: boolean
 }
+
+export type ModuleSecrets = undefined
 
 export function GetConfigFields(): SomeCompanionConfigField[] {
 	return [
@@ -40,6 +42,7 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			min: 1,
 			max: 65535,
 			default: 80,
+			asInteger: true,
 			isVisibleExpression: `!$(options:bonjourHost)`,
 		},
 		{
@@ -58,6 +61,7 @@ export function GetConfigFields(): SomeCompanionConfigField[] {
 			min: 200,
 			max: 60000,
 			default: 5000,
+			asInteger: true,
 		},
 		{
 			type: 'checkbox',
