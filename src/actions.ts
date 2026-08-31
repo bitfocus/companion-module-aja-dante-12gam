@@ -2,7 +2,7 @@ import { API_CALLS } from './enums.js'
 import type AjaDante12GAM from './main.js'
 import { Channel, HancData, LevelB, SdiControl, SfpControl, TestPattern, VideoFormat } from './schemas.js'
 import { Dante12GAM } from './device.js'
-import { portOption, toChoices, type PortType } from './options.js'
+import { describeValues, portOption, toChoices, type PortType } from './options.js'
 import { unhandledOption } from './util.js'
 import {
 	type CompanionActionDefinitions,
@@ -17,6 +17,12 @@ const logger = createModuleLogger('Actions')
 export enum ActionId {
 	ControlPort = 'control_port',
 }
+
+/**
+ * The test tone the SFP port offers. The schema leaves `testTone` a free string because the
+ * device's full value domain is unknown, so this only describes what the dropdown presents.
+ */
+const TestTone = ['1kHz'] as const
 
 /** The control parameters that may be included in a control port action */
 export type ControlParam = keyof SfpControl
@@ -77,6 +83,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'HANC Data',
 					default: 'Pass',
 					choices: toChoices(HancData),
+					expressionDescription: describeValues(HancData),
 					isVisibleExpression: `arrayIncludes($(options:params), "hancData")`,
 				},
 				{
@@ -85,6 +92,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Level B',
 					default: 'Stream A',
 					choices: toChoices(LevelB),
+					expressionDescription: describeValues(LevelB),
 					isVisibleExpression: `arrayIncludes($(options:params), "levelB")`,
 				},
 				{
@@ -93,6 +101,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Ch 1/2',
 					default: 'Pass',
 					choices: toChoices(Channel),
+					expressionDescription: describeValues(Channel),
 					isVisibleExpression: `arrayIncludes($(options:params), "channels_1_2")`,
 				},
 				{
@@ -101,6 +110,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Ch 3/4',
 					default: 'Pass',
 					choices: toChoices(Channel),
+					expressionDescription: describeValues(Channel),
 					isVisibleExpression: `arrayIncludes($(options:params), "channels_3_4")`,
 				},
 				{
@@ -109,6 +119,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Ch 5/6',
 					default: 'Pass',
 					choices: toChoices(Channel),
+					expressionDescription: describeValues(Channel),
 					isVisibleExpression: `arrayIncludes($(options:params), "channels_5_6")`,
 				},
 				{
@@ -117,6 +128,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Ch 7/8',
 					default: 'Pass',
 					choices: toChoices(Channel),
+					expressionDescription: describeValues(Channel),
 					isVisibleExpression: `arrayIncludes($(options:params), "channels_7_8")`,
 				},
 				{
@@ -125,6 +137,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Ch 9/10',
 					default: 'Pass',
 					choices: toChoices(Channel),
+					expressionDescription: describeValues(Channel),
 					isVisibleExpression: `arrayIncludes($(options:params), "channels_9_10")`,
 				},
 				{
@@ -133,6 +146,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Ch 11/12',
 					default: 'Pass',
 					choices: toChoices(Channel),
+					expressionDescription: describeValues(Channel),
 					isVisibleExpression: `arrayIncludes($(options:params), "channels_11_12")`,
 				},
 				{
@@ -141,6 +155,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Ch 13/14',
 					default: 'Pass',
 					choices: toChoices(Channel),
+					expressionDescription: describeValues(Channel),
 					isVisibleExpression: `arrayIncludes($(options:params), "channels_13_14")`,
 				},
 				{
@@ -149,6 +164,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Ch 15/16',
 					default: 'Pass',
 					choices: toChoices(Channel),
+					expressionDescription: describeValues(Channel),
 					isVisibleExpression: `arrayIncludes($(options:params), "channels_15_16")`,
 				},
 				{
@@ -164,6 +180,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Test Pattern',
 					default: 'Black',
 					choices: toChoices(TestPattern),
+					expressionDescription: describeValues(TestPattern),
 					isVisibleExpression: `arrayIncludes($(options:params), "testPattern")`,
 				},
 				{
@@ -172,6 +189,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Video Format',
 					default: '720p50',
 					choices: toChoices(VideoFormat),
+					expressionDescription: describeValues(VideoFormat),
 					isVisibleExpression: `arrayIncludes($(options:params), "videoFormat")`,
 				},
 				{
@@ -180,6 +198,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					label: 'Test Tone',
 					default: '1kHz',
 					choices: [{ id: '1kHz', label: '1 kHz' }],
+					expressionDescription: describeValues(TestTone),
 					isVisibleExpression: `arrayIncludes($(options:params), "testTone") && ($(options:type) == 'sfp')`,
 				},
 				{

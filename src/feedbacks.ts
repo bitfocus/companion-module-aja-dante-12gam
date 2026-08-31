@@ -1,16 +1,17 @@
 import { combineRgb, type CompanionFeedbackDefinitions, type DropdownChoice } from '@companion-module/base'
 import type AjaDante12GAM from './main.js'
-import type { InputAudio, SdiStatus } from './schemas.js'
+import { InputAudio, type SdiStatus } from './schemas.js'
 import {
 	audioIoOption,
 	danteChannelOption,
+	describeArrayValues,
 	portOption,
 	type AudioIo,
 	type DanteChannel,
 	type DanteChannelGroup,
 	type PortType,
 } from './options.js'
-import { unhandledOption } from './util.js'
+import { keysOf, unhandledOption } from './util.js'
 
 export enum FeedbackId {
 	DanteChannels = 'dante_channels',
@@ -21,12 +22,12 @@ export enum FeedbackId {
 /** The embedded audio groups reported by the SDI/SFP status */
 export type EmbeddedGroup = keyof InputAudio
 
-const embeddedGroupChoices: DropdownChoice<EmbeddedGroup>[] = [
-	{ id: 'embeddedGroup1', label: 'Group 1' },
-	{ id: 'embeddedGroup2', label: 'Group 2' },
-	{ id: 'embeddedGroup3', label: 'Group 3' },
-	{ id: 'embeddedGroup4', label: 'Group 4' },
-]
+const embeddedGroups = keysOf(InputAudio.shape)
+
+const embeddedGroupChoices: DropdownChoice<EmbeddedGroup>[] = embeddedGroups.map((id, index) => ({
+	id,
+	label: `Group ${index + 1}`,
+}))
 
 export type FeedbackSchema = {
 	[FeedbackId.DanteChannels]: {
@@ -133,6 +134,7 @@ export function UpdateFeedbacks(self: AjaDante12GAM): void {
 					choices: embeddedGroupChoices,
 					minSelection: 1,
 					tooltip: 'Feedback will check for the presense of the selected groups',
+					expressionDescription: describeArrayValues(embeddedGroups),
 				},
 			],
 			callback: ({ options }) => {

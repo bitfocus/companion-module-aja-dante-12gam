@@ -15,6 +15,26 @@ export function toChoices<T extends string>(values: readonly T[]): DropdownChoic
 	return values.map((id) => ({ id, label: id }))
 }
 
+/** Collapses a contiguous run of numbers into `min - max`, otherwise lists the values */
+function listValues(values: readonly (string | number)[]): string {
+	if (values.length > 5 && values.every((value) => typeof value === 'number')) {
+		const min = Math.min(...values)
+		const max = Math.max(...values)
+		if (values.length === max - min + 1) return `${min} - ${max}`
+	}
+	return values.join(' | ')
+}
+
+/** The values a dropdown accepts, shown in place of its description once it is in expression mode */
+export function describeValues(values: readonly (string | number)[]): string {
+	return `Accepted values: ${listValues(values)}`
+}
+
+/** As `describeValues`, for a multidropdown, whose expression has to produce an array */
+export function describeArrayValues(values: readonly (string | number)[]): string {
+	return `Expression should return an array. Accepted values: ${listValues(values)}`
+}
+
 /** The port an action or feedback targets */
 export const PortType = ['sdi', 'sfp'] as const
 export type PortType = (typeof PortType)[number]
@@ -28,6 +48,7 @@ export const portOption: CompanionInputFieldDropdown<'type', PortType> = {
 		{ id: 'sdi', label: 'SDI' },
 		{ id: 'sfp', label: 'SFP' },
 	],
+	expressionDescription: describeValues(PortType),
 }
 
 /** Whether a feedback looks at the port's input or output */
@@ -43,6 +64,7 @@ export const audioIoOption: CompanionInputFieldDropdown<'io', AudioIo> = {
 		{ id: 'input', label: 'Input' },
 		{ id: 'output', label: 'Output' },
 	],
+	expressionDescription: describeValues(AudioIo),
 }
 
 /** The Dante channel numbers each channel presence option field offers */
@@ -71,5 +93,6 @@ export function danteChannelOption<TGroup extends DanteChannelGroup>(
 		default: defaults,
 		choices: channels.map((id) => ({ id, label: `Channel ${id}` })),
 		minSelection: 0,
+		expressionDescription: describeArrayValues(channels),
 	}
 }

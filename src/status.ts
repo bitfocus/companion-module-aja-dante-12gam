@@ -1,6 +1,6 @@
-import { InstanceStatus } from '@companion-module/base'
+import { InstanceStatus, createModuleLogger } from '@companion-module/base'
 import type AjaDante12GAM from './main.js'
-import { throttle } from 'lodash'
+import { throttle, type ThrottledFunction } from 'es-toolkit'
 
 export interface Status {
 	status: InstanceStatus
@@ -22,6 +22,8 @@ export class StatusManager {
 	#parentInstance!: AjaDante12GAM
 	#throttleTimeout: number = 2000
 	#isDestroyed: boolean = false
+	#logger = createModuleLogger('Status Manager')
+	private setNewStatus!: ThrottledFunction<(newStatus?: Status) => void>
 
 	constructor(
 		self: AjaDante12GAM,
@@ -29,8 +31,28 @@ export class StatusManager {
 		throttleTimeout: number = 2000,
 	) {
 		this.#parentInstance = self
-		this.setNewStatus(initStatus)
 		this.#throttleTimeout = throttleTimeout
+
+		/**
+		 * Perform the status update
+		 * @param newStatus
+		 *
+		 */
+
+		this.setNewStatus = throttle(
+			(newStatus: Status = this.#newStatus) => {
+				if (typeof newStatus.message === 'object' && newStatus.message !== null) {
+					this.#parentInstance.updateStatus(newStatus.status, JSON.stringify(newStatus.message))
+				} else {
+					this.#parentInstance.updateStatus(newStatus.status, newStatus.message)
+				}
+				this.#currentStatus = newStatus
+			},
+			this.#throttleTimeout,
+			{ edges: ['leading', 'trailing'] },
+		)
+
+		this.setNewStatus(initStatus)
 	}
 
 	/**
@@ -54,7 +76,7 @@ export class StatusManager {
 
 	public updateStatus(newStatus: InstanceStatus, newMsg: string | object | null = null): void {
 		if (this.#isDestroyed) {
-			console.log(
+			this.#logger.warn(
 				`Module destroyed. Can't update status\n${newStatus}: ${typeof newMsg == 'object' ? JSON.stringify(newMsg) : newMsg}`,
 			)
 			return
@@ -63,25 +85,6 @@ export class StatusManager {
 		this.#newStatus = { status: newStatus, message: newMsg }
 		this.setNewStatus(this.#newStatus)
 	}
-
-	/**
-	 * Perform the status update
-	 * @param newStatus
-	 *
-	 */
-
-	private setNewStatus = throttle(
-		(newStatus: Status = this.#newStatus) => {
-			if (typeof newStatus.message === 'object') {
-				this.#parentInstance.updateStatus(newStatus.status, JSON.stringify(newStatus.message))
-			} else {
-				this.#parentInstance.updateStatus(newStatus.status, newStatus.message)
-			}
-			this.#currentStatus = newStatus
-		},
-		this.#throttleTimeout,
-		{ leading: true, trailing: true },
-	)
 
 	/**
 	 * Clears any running debounce timer, sets status to disconnected
