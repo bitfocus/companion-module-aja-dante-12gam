@@ -59,7 +59,7 @@ export default class AjaDante12GAM extends InstanceBase<ModuleTypes> implements 
 		this.#controller = new AbortController()
 
 		this.config = config
-		process.title = this.label
+
 		if (this.#pollTimer) {
 			clearTimeout(this.#pollTimer)
 			this.#pollTimer = undefined
