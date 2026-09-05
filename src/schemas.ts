@@ -1,5 +1,15 @@
 import { z } from 'zod'
 
+/**
+ * Schemas that get `.parse()`d are wrapped in `z.compile()`, which generates an AOT fast path
+ * for the whole subtree on first use. Composition units below (Discover, InputAudio, NetDevice,
+ * …) are deliberately left uncompiled — compiling a parent already compiles its children, so
+ * compiling them separately only costs codegen for a path nothing parses directly.
+ *
+ * `compile()` never throws: a schema the fast path cannot model is returned unchanged and keeps
+ * using the runtime parser. Every schema here compiles under `{ strict: true }`.
+ */
+
 // These are `as const` so that `z.enum()` infers a union of literals rather than `string`.
 // The literal types flow through to the action/feedback option types.
 
@@ -43,82 +53,94 @@ export const Discover = z.object({
 
 export type Discover = z.infer<typeof Discover>
 
-export const Discovers = z.array(Discover)
+export const Discovers = z.compile(z.array(Discover))
 
 export type Discovers = z.infer<typeof Discovers>
 
-export const BuildInfo = z.object({
-	buildType: z.string(),
-	date: z.iso.date(),
-	qtVersion: z.string(),
-	repoident: z.string(),
-	serverVersion: z.string(),
-	time: z.iso.time(),
-})
+export const BuildInfo = z.compile(
+	z.object({
+		buildType: z.string(),
+		date: z.iso.date(),
+		qtVersion: z.string(),
+		repoident: z.string(),
+		serverVersion: z.string(),
+		time: z.iso.time(),
+	}),
+)
 
 export type BuildInfo = z.infer<typeof BuildInfo>
 
-export const Status = z.object({
-	licenseActive: z.union([z.boolean(), z.stringbool()]),
-	serialNumber: z.string(),
-	systemDate: z.string(),
-	systemTime: z.iso.time(),
-})
+export const Status = z.compile(
+	z.object({
+		licenseActive: z.union([z.boolean(), z.stringbool()]),
+		serialNumber: z.string(),
+		systemDate: z.string(),
+		systemTime: z.iso.time(),
+	}),
+)
 
 export type Status = z.infer<typeof Status>
 
-export const SystemConfig = z.object({
-	authenticationEnable: z.union([z.boolean(), z.stringbool()]),
-	checkLicenseRequest: z.union([z.boolean(), z.stringbool()]),
-	domainName: z.string(),
-	factoryPreset: z.union([z.boolean(), z.stringbool()]),
-	factoryReset: z.union([z.boolean(), z.stringbool()]),
-	hostName: z.string(),
-	identify: z.union([z.boolean(), z.stringbool()]),
-	reboot: z.union([z.boolean(), z.stringbool()]),
-	shutdown: z.union([z.boolean(), z.stringbool()]),
-	ssdpEnable: z.union([z.boolean(), z.stringbool()]),
-	systemOrganizationName: z.string(),
-	updateRequest: z.union([z.boolean(), z.stringbool()]),
-})
+export const SystemConfig = z.compile(
+	z.object({
+		authenticationEnable: z.union([z.boolean(), z.stringbool()]),
+		checkLicenseRequest: z.union([z.boolean(), z.stringbool()]),
+		domainName: z.string(),
+		factoryPreset: z.union([z.boolean(), z.stringbool()]),
+		factoryReset: z.union([z.boolean(), z.stringbool()]),
+		hostName: z.string(),
+		identify: z.union([z.boolean(), z.stringbool()]),
+		reboot: z.union([z.boolean(), z.stringbool()]),
+		shutdown: z.union([z.boolean(), z.stringbool()]),
+		ssdpEnable: z.union([z.boolean(), z.stringbool()]),
+		systemOrganizationName: z.string(),
+		updateRequest: z.union([z.boolean(), z.stringbool()]),
+	}),
+)
 
 export type SystemConfig = z.infer<typeof SystemConfig>
 
-export const SdiControl = z.object({
-	channels_1_2: z.enum(Channel),
-	channels_3_4: z.enum(Channel),
-	channels_5_6: z.enum(Channel),
-	channels_7_8: z.enum(Channel),
-	channels_9_10: z.enum(Channel),
-	channels_11_12: z.enum(Channel),
-	channels_13_14: z.enum(Channel),
-	channels_15_16: z.enum(Channel),
-	enableInternalSignalGenerator: z.union([z.boolean(), z.stringbool()]),
-	hancData: z.enum(HancData),
-	levelB: z.enum(LevelB),
-	testPattern: z.enum(TestPattern),
-	videoFormat: z.enum(VideoFormat),
-})
+export const SdiControl = z.compile(
+	z.object({
+		channels_1_2: z.enum(Channel),
+		channels_3_4: z.enum(Channel),
+		channels_5_6: z.enum(Channel),
+		channels_7_8: z.enum(Channel),
+		channels_9_10: z.enum(Channel),
+		channels_11_12: z.enum(Channel),
+		channels_13_14: z.enum(Channel),
+		channels_15_16: z.enum(Channel),
+		enableInternalSignalGenerator: z.union([z.boolean(), z.stringbool()]),
+		hancData: z.enum(HancData),
+		levelB: z.enum(LevelB),
+		testPattern: z.enum(TestPattern),
+		videoFormat: z.enum(VideoFormat),
+	}),
+)
 
 export type SdiControl = z.infer<typeof SdiControl>
 
-export const SfpControl = z.object({
-	...SdiControl.shape,
-	testTone: z.string(),
-})
+export const SfpControl = z.compile(
+	z.object({
+		...SdiControl.shape,
+		testTone: z.string(),
+	}),
+)
 
 export type SfpControl = z.infer<typeof SfpControl>
 
-export const SystemStatus = z.object({
-	mainbootVersion: z.string(),
-	runningVersion: z.string(),
-	safeboot: z.union([z.boolean(), z.stringbool()]),
-	safebootVersion: z.string(),
-})
+export const SystemStatus = z.compile(
+	z.object({
+		mainbootVersion: z.string(),
+		runningVersion: z.string(),
+		safeboot: z.union([z.boolean(), z.stringbool()]),
+		safebootVersion: z.string(),
+	}),
+)
 
 export type SystemStatus = z.infer<typeof SystemStatus>
 
-export const Alarm = z.array(z.any())
+export const Alarm = z.compile(z.array(z.any()))
 
 export type Alarm = z.infer<typeof Alarm>
 
@@ -150,15 +172,17 @@ export const OutputVideo = InputVideo
 
 export type OutputVideo = z.infer<typeof OutputVideo>
 
-export const SdiStatus = z.object({
-	inputAudio: InputAudio,
-	outputAudio: OutputAudio,
-	inputVideo: InputVideo,
-	outputVideo: OutputVideo,
-	inputLevelB: z.string(),
-	inputLocked: z.union([z.boolean(), z.stringbool()]),
-	outputTSGEnabled: z.union([z.boolean(), z.stringbool()]),
-})
+export const SdiStatus = z.compile(
+	z.object({
+		inputAudio: InputAudio,
+		outputAudio: OutputAudio,
+		inputVideo: InputVideo,
+		outputVideo: OutputVideo,
+		inputLevelB: z.string(),
+		inputLocked: z.union([z.boolean(), z.stringbool()]),
+		outputTSGEnabled: z.union([z.boolean(), z.stringbool()]),
+	}),
+)
 
 export type SdiStatus = z.infer<typeof SdiStatus>
 
@@ -166,12 +190,14 @@ export const SfpStatus = SdiStatus
 
 export type SfpStatus = z.infer<typeof SfpStatus>
 
-export const DanteStatus = z.object({
-	channels_1_8: stringToNumberSetSchema,
-	channels_9_16: stringToNumberSetSchema,
-	channels_17_24: stringToNumberSetSchema,
-	channels_25_32: stringToNumberSetSchema,
-})
+export const DanteStatus = z.compile(
+	z.object({
+		channels_1_8: stringToNumberSetSchema,
+		channels_9_16: stringToNumberSetSchema,
+		channels_17_24: stringToNumberSetSchema,
+		channels_25_32: stringToNumberSetSchema,
+	}),
+)
 
 export type DanteStatus = z.infer<typeof DanteStatus>
 
@@ -228,17 +254,19 @@ export const NetDevice = z.object({
 
 export type NetDevice = z.infer<typeof NetDevice>
 
-export const NetDevices = z.array(NetDevice)
+export const NetDevices = z.compile(z.array(NetDevice))
 
 export type NetDevices = z.infer<typeof NetDevices>
 
-export const EnvironmentStatus = z.object({
-	dieTemp: z.string(),
-	externalPowerPresent: z.union([z.boolean(), z.stringbool()]),
-	fanSpeed1: z.int().min(0),
-	fanSpeed2: z.int().min(0),
-	poePresent: z.union([z.boolean(), z.stringbool()]),
-	poeT2p: z.union([z.boolean(), z.stringbool()]),
-})
+export const EnvironmentStatus = z.compile(
+	z.object({
+		dieTemp: z.string(),
+		externalPowerPresent: z.union([z.boolean(), z.stringbool()]),
+		fanSpeed1: z.int().min(0),
+		fanSpeed2: z.int().min(0),
+		poePresent: z.union([z.boolean(), z.stringbool()]),
+		poeT2p: z.union([z.boolean(), z.stringbool()]),
+	}),
+)
 
 export type EnvironmentStatus = z.infer<typeof EnvironmentStatus>
