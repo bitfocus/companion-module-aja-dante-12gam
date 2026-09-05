@@ -209,7 +209,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					isVisibleExpression: `arrayIncludes($(options:params), "testTone") && ($(options:type) == 'sdi')`,
 				},
 			],
-			callback: async ({ options }) => {
+			callback: async ({ options }, context) => {
 				let apiCall: API_CALLS.ControlSdi | API_CALLS.ControlSfp
 				// Start from the last known device state, so unselected parameters are left as they are
 				let msg: Record<string, JsonValue>
@@ -241,8 +241,8 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 				try {
 					const response =
 						apiCall === API_CALLS.ControlSdi
-							? await self.clientPut(apiCall, SdiControl.parse(msg))
-							: await self.clientPut(apiCall, SfpControl.parse(msg))
+							? await self.clientPut(apiCall, SdiControl.parse(msg), context.signal)
+							: await self.clientPut(apiCall, SfpControl.parse(msg), context.signal)
 					if (self.config.verbose && response) {
 						logger.debug(`${apiCall} sent. Response: ${JSON.stringify(response.data)}`)
 					}

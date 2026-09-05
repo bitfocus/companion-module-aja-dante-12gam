@@ -55,6 +55,8 @@ export default class AjaDante12GAM extends InstanceBase<ModuleTypes> implements 
 
 	public async configUpdated(config: ModuleConfig, _secrets: ModuleSecrets): Promise<void> {
 		const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+		this.#controller.abort('Setting up new client')
+		this.#controller = new AbortController()
 
 		this.config = config
 		process.title = this.label
@@ -82,6 +84,7 @@ export default class AjaDante12GAM extends InstanceBase<ModuleTypes> implements 
 		this.#queue.clear()
 		if (this.#client) {
 			this.#controller.abort('Setting up new client')
+			this.#controller = new AbortController()
 		}
 		return (this.#client = axios.create({
 			baseURL: `http://${config.host}:${config.port}${API_PATH}`,
@@ -90,11 +93,21 @@ export default class AjaDante12GAM extends InstanceBase<ModuleTypes> implements 
 		}))
 	}
 
-	async clientGet(path: API_CALLS): Promise<AxiosResponse<any, any> | void> {
+	/**
+	 * Combine an optional caller supplied signal with the instance's own abort signal, so that a request is aborted
+	 * by whichever fires first
+	 * @param {AbortSignal} [signal] Optional signal from the caller, eg an action or feedback context signal
+	 * @returns {AbortSignal} The instance signal, or a signal that aborts when either signal aborts
+	 */
+	private combineSignal(signal?: AbortSignal): AbortSignal {
+		return signal ? AbortSignal.any([this.#controller.signal, signal]) : this.#controller.signal
+	}
+
+	async clientGet(path: API_CALLS, signal?: AbortSignal): Promise<AxiosResponse<any, any> | void> {
 		return await this.#queue.add(
-			async () => {
+			async ({ signal: requestSignal }) => {
 				return await this.#client
-					.get(path)
+					.get(path, { signal: requestSignal })
 					.then((response) => {
 						this.statusManager.updateStatus(InstanceStatus.Ok)
 						if (this.config.verbose) {
@@ -104,18 +117,19 @@ export default class AjaDante12GAM extends InstanceBase<ModuleTypes> implements 
 					})
 					.catch((error) => this.handleError(error))
 			},
-			{ priority: 1 },
+			{ signal: this.combineSignal(signal), priority: 1 },
 		)
 	}
 
 	async clientPut(
 		path: API_CALLS.ControlSdi | API_CALLS.ControlSfp,
 		data: SdiControl | SfpControl,
+		signal?: AbortSignal,
 	): Promise<AxiosResponse<any, any> | void> {
 		return await this.#queue.add(
-			async () => {
+			async ({ signal: requestSignal }) => {
 				return await this.#client
-					.put(path, data)
+					.put(path, data, { signal: requestSignal })
 					.then((response) => {
 						this.statusManager.updateStatus(InstanceStatus.Ok)
 						if (this.config.verbose) {
@@ -125,7 +139,7 @@ export default class AjaDante12GAM extends InstanceBase<ModuleTypes> implements 
 					})
 					.catch((error) => this.handleError(error))
 			},
-			{ priority: 2 },
+			{ signal: this.combineSignal(signal), priority: 2 },
 		)
 	}
 
