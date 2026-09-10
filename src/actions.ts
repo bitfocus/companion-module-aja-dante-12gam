@@ -233,7 +233,7 @@ export function UpdateActions(self: AjaDante12GAM, device: Dante12GAM): void {
 					default:
 						return unhandledOption(options.type, undefined)
 				}
-				if (!Array.isArray(options.params) || options.params.length === 0) return
+				if (options.params.length === 0) return
 				for (const parameter of options.params) {
 					const value = options[parameter]
 					if (parameter in msg && value !== undefined) msg[parameter] = value
